@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -555,6 +555,11 @@
   .badge.member { background: rgba(107,133,121,.18); color: var(--court-from); }
   .badge.pending { background: var(--amber-pale); color: var(--amber); }
   .badge.blocked { background: rgba(183,62,62,.14); color: var(--red); }
+  .badge.owner {
+    background: linear-gradient(135deg, #C8893A 0%, #9C6B26 100%);
+    color: #FFF;
+    box-shadow: 0 1px 3px rgba(156,107,38,.3);
+  }
 
   .cb-sheet button.act {
     margin-left: auto; background: var(--ink); color: var(--bg);
@@ -602,6 +607,55 @@
   .cb-strengths .tags .empty {
     font-size: 11px; color: var(--ink-mute); font-style: italic;
   }
+
+  /* Self-edit panel (only the current user sees this on their own profile) */
+  .cb-edit-profile {
+    margin-top: 16px;
+    border-top: 1px solid rgba(45,61,52,.1);
+    padding-top: 14px;
+  }
+  .cb-edit-profile .label {
+    font-size: 10px; color: var(--blue);
+    text-transform: uppercase; letter-spacing: .12em;
+    font-weight: 700; margin-bottom: 10px;
+  }
+  .strength-pick {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .strength-pick .strength-opt {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; padding: 6px 12px;
+    background: rgba(45,61,52,.05);
+    border: 0.5px solid rgba(45,61,52,.12);
+    color: var(--ink-soft);
+    border-radius: 999px;
+    cursor: pointer; font-family: inherit;
+    font-weight: 500;
+    user-select: none;
+  }
+  .strength-pick .strength-opt:hover { background: rgba(45,61,52,.08); }
+  .strength-pick .strength-opt.on {
+    background: rgba(107,133,121,.18);
+    color: var(--court-from);
+    border-color: var(--court-from);
+    font-weight: 600;
+  }
+  .strength-pick .strength-opt .en {
+    font-size: 9px; opacity: .65; font-weight: 400;
+    letter-spacing: .02em;
+  }
+  .save-profile-btn {
+    margin-top: 14px;
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--blue); color: #FFF;
+    border: 0; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    letter-spacing: .04em;
+  }
+  .save-profile-btn:hover { background: #3F5C77; }
+  .save-profile-btn:disabled { opacity: .5; cursor: not-allowed; }
 
   .cb-sheet .stulist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .cb-sheet .chip {
@@ -800,6 +854,197 @@
     margin-top: 8px;
   }
   .add-coach-cta:hover { background: #1F2D26; }
+
+  /* ====== ADMIN PANEL — premium stats / ranking / settings ====== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .stat-card {
+    background: linear-gradient(135deg, #FFFFFF 0%, #FBF6E9 100%);
+    border-radius: 12px;
+    padding: 12px 14px;
+    border: 0.5px solid rgba(45,61,52,.08);
+    box-shadow: 0 1px 4px rgba(60,75,65,.04);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute;
+    top: 0; right: 0;
+    width: 32px; height: 32px;
+    background: radial-gradient(circle at top right, rgba(107,133,121,.10), transparent 70%);
+    pointer-events: none;
+  }
+  .stat-card .label {
+    font-size: 9px; color: var(--ink-soft);
+    letter-spacing: .14em; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 6px;
+  }
+  .stat-card .value {
+    font-size: 22px; font-weight: 700;
+    color: var(--ink); letter-spacing: -.02em;
+    font-family: ui-monospace, "SF Mono", monospace;
+    line-height: 1.1;
+  }
+  .stat-card .delta {
+    font-size: 10px; color: var(--ink-mute);
+    margin-top: 4px; letter-spacing: .04em;
+  }
+  .stat-card .delta.up { color: var(--court-from); }
+
+  .rank-list {
+    background: #FFF;
+    border-radius: 12px;
+    padding: 12px 14px;
+    border: 0.5px solid rgba(45,61,52,.06);
+    box-shadow: 0 1px 4px rgba(60,75,65,.04);
+    margin-bottom: 10px;
+  }
+  .rank-list .title {
+    font-size: 10px; color: var(--ink-soft);
+    letter-spacing: .12em; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .rank-list .title .hint {
+    font-size: 9px; color: var(--ink-mute);
+    letter-spacing: .04em; font-weight: 500;
+    text-transform: none;
+  }
+  .rank-row {
+    display: flex; align-items: center;
+    gap: 10px; padding: 7px 0;
+    border-top: 0.5px solid rgba(45,61,52,.06);
+  }
+  .rank-row:first-child { border-top: 0; }
+  .rank-row .rk {
+    font-size: 10px; color: var(--ink-mute);
+    font-family: ui-monospace, monospace;
+    width: 22px; flex-shrink: 0;
+    font-weight: 600;
+  }
+  .rank-row .rk.top1 { color: var(--amber); }
+  .rank-row .rk.top2, .rank-row .rk.top3 { color: var(--ink-soft); }
+  .rank-row > .av {
+    width: 26px; height: 26px;
+    border-radius: 50%; flex-shrink: 0;
+    color: #FFF; font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    box-shadow: inset 0 0 0 0.5px rgba(255,255,255,.25);
+  }
+  .rank-row > .av img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; border-radius: 50%;
+  }
+  .rank-row .nm {
+    font-size: 12px; color: var(--ink); flex: 1;
+    font-weight: 500; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .rank-row .nm .sub {
+    display: block; font-size: 9px;
+    color: var(--ink-mute); margin-top: 1px;
+    font-weight: 400; letter-spacing: .02em;
+  }
+  .rank-row .bar {
+    height: 4px;
+    background: rgba(45,61,52,.06);
+    border-radius: 999px;
+    flex: 0 0 80px;
+    position: relative; overflow: hidden;
+  }
+  .rank-row .bar > i {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: linear-gradient(90deg, var(--green) 0%, var(--court-from) 100%);
+    border-radius: 999px;
+    transition: width .3s ease;
+  }
+  .rank-row .bar.amber > i {
+    background: linear-gradient(90deg, var(--amber) 0%, #9C6B26 100%);
+  }
+  .rank-row .num {
+    font-size: 12px; color: var(--ink);
+    font-weight: 600;
+    font-family: ui-monospace, monospace;
+    min-width: 32px; text-align: right;
+  }
+  .rank-row .ops {
+    display: flex; gap: 4px; flex-shrink: 0;
+  }
+  .rank-row .ops button {
+    background: rgba(45,61,52,.06);
+    border: 0; border-radius: 6px;
+    padding: 5px 9px; font-size: 10px;
+    cursor: pointer; font-family: inherit; font-weight: 500;
+    color: var(--ink);
+  }
+  .rank-row .ops button.danger { background: rgba(183,62,62,.10); color: var(--red); }
+  .rank-row .ops button.blue { background: var(--blue-pale); color: var(--blue); }
+  .rank-row .ops button:disabled { opacity: .35; cursor: not-allowed; }
+  .rank-row .lock-note {
+    font-size: 9px; color: var(--ink-mute);
+    font-style: italic; flex-shrink: 0;
+    padding: 5px 9px;
+    background: rgba(200,137,58,.08);
+    border-radius: 6px;
+    color: #9C6B26;
+    font-weight: 500;
+  }
+
+  .panel-notice {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: var(--blue-pale);
+    border-radius: 10px;
+    font-size: 11px; color: var(--blue);
+    line-height: 1.6;
+    border: 0.5px solid rgba(74,107,138,.18);
+  }
+  .panel-notice strong { font-weight: 600; }
+
+  .promote-form {
+    background: #FFF;
+    border-radius: 12px;
+    padding: 14px;
+    border: 0.5px solid rgba(45,61,52,.06);
+    box-shadow: 0 1px 4px rgba(60,75,65,.04);
+  }
+  .promote-form .ttl {
+    font-size: 11px; color: var(--ink-soft);
+    letter-spacing: .12em; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 10px;
+    display: flex; justify-content: space-between;
+  }
+  .promote-form select {
+    width: 100%; padding: 10px 12px;
+    background: #F4ECDA;
+    border: 0.5px solid rgba(45,61,52,.12);
+    border-radius: 8px; font-size: 13px;
+    color: var(--ink); font-family: inherit;
+    margin-bottom: 10px;
+  }
+  .promote-form button {
+    width: 100%; padding: 11px;
+    background: var(--blue); color: #FFF;
+    border: 0; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    letter-spacing: .04em;
+  }
+  .promote-form button:hover { background: #3F5C77; }
+  .promote-form button:disabled {
+    background: rgba(45,61,52,.15); cursor: not-allowed;
+  }
+
+  /* Wider sheet for admin panel on tablet+ */
+  @media (min-width: 720px) {
+    .stats-grid { grid-template-columns: repeat(4, 1fr); }
+  }
 
   .empty-state {
     text-align: center; padding: 30px 16px;
@@ -1030,6 +1275,7 @@
     MEMBER:  'member',
     COACH:   'coach',
     ADMIN:   'admin',
+    OWNER:   'owner',
     BLOCKED: 'blocked'
   };
 
@@ -1064,7 +1310,7 @@
     'U0000000015': { userId:'U0000000015', displayName:'被封鎖者',    ic:'X', cl:'#888888', status:STATUS.BLOCKED, createdAt:'2026-03-10', ntrp:'2.5', playCount:3,  strengths:[] },
     /* Real LINE userId — bootstrap admin. handleLogin() will refresh
        displayName / pictureUrl on every LIFF login but preserve status. */
-    'Ub1cc54fbbecfcea070a29ce8762fb05b': { userId:'Ub1cc54fbbecfcea070a29ce8762fb05b', displayName:'Maverick 小猴', ic:'M', cl:'#4A6B8A', status:STATUS.ADMIN, createdAt:'2026-04-30', ntrp:'—', playCount:0, strengths:[] }
+    'Ub1cc54fbbecfcea070a29ce8762fb05b': { userId:'Ub1cc54fbbecfcea070a29ce8762fb05b', displayName:'Maverick 小猴', ic:'M', cl:'#4A6B8A', status:STATUS.OWNER, createdAt:'2026-04-30', ntrp:'—', playCount:0, strengths:[] }
   };
 
   let currentUserId = 'U0000000001';
@@ -1074,11 +1320,20 @@
   ============================================================ */
   function getUser(id) { return USERS[id]; }
   function me() { return getUser(currentUserId); }
-  function isAdmin() { return me() && me().status === STATUS.ADMIN; }
+  /* OWNER inherits all ADMIN powers, so isAdmin() returns true for both. */
+  function isAdmin() {
+    const u = me();
+    return u && (u.status === STATUS.ADMIN || u.status === STATUS.OWNER);
+  }
+  function isOwner(uid){
+    const u = uid ? getUser(uid) : me();
+    return !!(u && u.status === STATUS.OWNER);
+  }
   function isCoach(uid) { const u = getUser(uid); return u && u.status === STATUS.COACH; }
   function canBook() {
     const u = me();
-    return u && (u.status === STATUS.MEMBER || u.status === STATUS.COACH || u.status === STATUS.ADMIN);
+    return u && (u.status === STATUS.MEMBER || u.status === STATUS.COACH ||
+                 u.status === STATUS.ADMIN  || u.status === STATUS.OWNER);
   }
   /* Status-specific reject message — used by booking actions */
   function bookingRejectMessage(){
@@ -1088,8 +1343,12 @@
     if (u.status === STATUS.BLOCKED) return '帳號已被封鎖，無法使用此功能';
     return '需要會員權限';
   }
+  /* Number of ADMIN-status users (does NOT count OWNER — OWNER is separate). */
   function adminCount() {
     return Object.values(USERS).filter(u => u.status === STATUS.ADMIN).length;
+  }
+  function ownerCount() {
+    return Object.values(USERS).filter(u => u.status === STATUS.OWNER).length;
   }
   function pendingList() {
     return Object.values(USERS).filter(u => u.status === STATUS.PENDING);
@@ -1246,6 +1505,18 @@
     });
   }
 
+  /* Same-court / same-time uniqueness:
+     A user can only appear once per (court, time). They MAY still book a
+     different court at the same time (cross-court bookings stay allowed). */
+  function userOnSameCourtTime(uid, court, time){
+    const slot = courts[court] && courts[court][time];
+    if (!slot) return false;
+    return ['top','bottom'].some(h => {
+      const s = slot[h]; if (!s) return false;
+      return (s.p || []).indexOf(uid) >= 0;
+    });
+  }
+
   function adjacentBookingCount(uid, court, time){
     const prev = addMin(time, -30);
     const next = addMin(time,  30);
@@ -1300,7 +1571,9 @@
     marker.style.left = pct + '%';
 
     const t = TIMES[activeIdx];
-    const role = u.status === STATUS.ADMIN ? '管理員' : u.status === STATUS.COACH ? '教練' : '會員';
+    const role = u.status === STATUS.OWNER ? '擁有者'
+               : u.status === STATUS.ADMIN ? '管理員'
+               : u.status === STATUS.COACH ? '教練' : '會員';
     subEl.textContent = `${t} — ${addMin(t,30)} · ${role}模式`;
     overlay.classList.remove('show');
   }
@@ -1466,6 +1739,7 @@
     if (!isAdmin()) return showToast('需要管理員權限', true);
     const u = getUser(uid);
     if (!u || u.status !== STATUS.PENDING) return;
+    if (u.status === STATUS.OWNER) return; /* defensive: OWNER never deletable */
     delete USERS[uid];
     showToast(`已拒絕 ${u.displayName} 的申請`);
     rerenderAdminPanel(); renderApp();
@@ -1474,17 +1748,31 @@
   function setStatus(uid, newStatus){
     if (!isAdmin()) return showToast('需要管理員權限', true);
     const u = getUser(uid);
-    if (!u) return;
+    if (!u) return false;
+
+    /* RULE 3: OWNER cannot be edited by anyone, ever. */
+    if (u.status === STATUS.OWNER){
+      showToast('OWNER 無法被變更', true); return false;
+    }
+    /* RULE: OWNER role cannot be assigned at runtime — bootstrap-only. */
+    if (newStatus === STATUS.OWNER){
+      showToast('OWNER 角色由系統指派，無法手動設定', true); return false;
+    }
+    /* RULES 4 + 7: only OWNER can promote to ADMIN or demote ADMIN. */
     if (newStatus === STATUS.ADMIN && u.status !== STATUS.ADMIN){
+      if (!isOwner()){
+        showToast('只有 OWNER 可以指派管理員', true); return false;
+      }
       if (adminCount() >= MAX_ADMINS){
         showToast(`已達管理員上限 (最多 ${MAX_ADMINS} 位)`, true); return false;
       }
     }
     if (u.status === STATUS.ADMIN && newStatus !== STATUS.ADMIN){
-      if (adminCount() <= 1){
-        showToast('系統至少需保留 1 位管理員', true); return false;
+      if (!isOwner()){
+        showToast('只有 OWNER 可以變更管理員身份', true); return false;
       }
     }
+
     u.status = newStatus;
     showToast(`${u.displayName} 已設為 ${labelForStatus(newStatus)}`);
     rerenderAdminPanel(); renderApp();
@@ -1494,8 +1782,14 @@
   function blockUser(uid){
     if (!isAdmin()) return showToast('需要管理員權限', true);
     const u = getUser(uid); if (!u) return;
-    if (u.status === STATUS.ADMIN && adminCount() <= 1){
-      showToast('無法封鎖最後一位管理員', true); return;
+
+    /* RULE 3: OWNER cannot be blocked. */
+    if (u.status === STATUS.OWNER){
+      showToast('OWNER 無法被封鎖', true); return;
+    }
+    /* RULE 7: ADMIN can only be blocked by OWNER. */
+    if (u.status === STATUS.ADMIN && !isOwner()){
+      showToast('只有 OWNER 可以封鎖管理員', true); return;
     }
     u.status = STATUS.BLOCKED;
     removeFromAllBookings(uid);
@@ -1555,7 +1849,7 @@
   }
 
   function labelForStatus(s){
-    return ({pending:'待審核', member:'會員', coach:'教練', admin:'管理員', blocked:'封鎖'})[s] || s;
+    return ({pending:'待審核', member:'會員', coach:'教練', admin:'管理員', owner:'擁有者', blocked:'封鎖'})[s] || s;
   }
 
   /* ============================================================
@@ -1572,6 +1866,7 @@
   }
 
   function roleBadgeHTML(u){
+    if (u.status === STATUS.OWNER)  return '<span class="badge owner">OWNER</span>';
     if (u.status === STATUS.COACH)  return '<span class="badge coach">COACH</span>';
     if (u.status === STATUS.ADMIN)  return '<span class="badge admin">ADMIN</span>';
     if (u.status === STATUS.BLOCKED)return '<span class="badge blocked">BLOCKED</span>';
@@ -1628,6 +1923,7 @@
         <div class="label">擅長位置 · Strengths</div>
         <div class="tags">${strengthTagsHTML(u.strengths)}</div>
       </div>
+      ${ mine ? renderMyEditPanel(u) : '' }
       ${ replaceableHere ? `<div style="margin-top:12px; font-size:11px; color:var(--amber); background:var(--amber-pale); padding:8px 10px; border-radius:8px;">此預約為連續第二格，可被尚未預約的會員替補。</div>` : '' }
       ${ adminActionsForUser(u, context) }
     `;
@@ -1643,16 +1939,86 @@
         joinSeatAt(context);
       }
     });
+    if (mine) bindMyEditPanel(context);
     bindAdminButtons(u, context);
+  }
+
+  /* ------- Self-edit panel: NTRP dropdown + strengths multi-select ------- */
+  const NTRP_OPTIONS = ['2.0','2.5','3.0','3.5','4.0','4.5','5.0+'];
+
+  function renderMyEditPanel(u){
+    const ntrpHTML = NTRP_OPTIONS.map(v =>
+      `<option value="${v}" ${u.ntrp === v ? 'selected' : ''}>${v}</option>`
+    ).join('');
+    const cur = u.strengths || [];
+    const tagsHTML = STRENGTH_KEYS.map(k => {
+      const en = STRENGTH_INFO[k] || '';
+      return `<button type="button" class="strength-opt ${cur.indexOf(k)>=0?'on':''}" data-key="${k}">${k}<span class="en">${en}</span></button>`;
+    }).join('');
+    return `
+      <div class="cb-edit-profile">
+        <div class="label">編輯個人資料 · Edit profile</div>
+        <div class="form-row">
+          <label>NTRP</label>
+          <select id="my-ntrp">${ntrpHTML}</select>
+        </div>
+        <div class="form-row" style="margin-bottom:0;">
+          <label>擅長位置 (Strengths)</label>
+          <div class="strength-pick" id="my-strengths">${tagsHTML}</div>
+        </div>
+        <button type="button" class="save-profile-btn" id="save-profile">儲存資料</button>
+      </div>
+    `;
+  }
+
+  function bindMyEditPanel(context){
+    sheet.querySelectorAll('#my-strengths .strength-opt').forEach(b => {
+      b.addEventListener('click', () => b.classList.toggle('on'));
+    });
+    const save = sheet.querySelector('#save-profile');
+    if (!save) return;
+    save.addEventListener('click', () => {
+      const u = USERS[currentUserId]; if (!u) return;
+      const sel = sheet.querySelector('#my-ntrp');
+      if (sel) u.ntrp = sel.value;
+      u.strengths = Array.from(sheet.querySelectorAll('#my-strengths .strength-opt.on'))
+        .map(b => b.getAttribute('data-key'));
+      showToast('已更新個人資料');
+      /* Re-open to refresh both the read-only stats/tags and the editor */
+      openProfile(currentUserId, context);
+      /* Court board may show updated info too — refresh app */
+      if (screens.app.classList.contains('active')) renderApp();
+    });
   }
 
   function adminActionsForUser(u, context){
     if (!isAdmin()) return '';
     if (u.userId === currentUserId) return '';
-    const isLastAdmin = u.status === STATUS.ADMIN && adminCount() <= 1;
+
+    /* OWNER target — completely locked, no actions for anyone */
+    if (u.status === STATUS.OWNER){
+      return `
+        <div class="admin-panel">
+          <div class="label">管理員操作</div>
+          <div class="panel-notice"><strong>OWNER 無法被任何人變更。</strong>系統擁有者身份永久且唯一。</div>
+          ${ context ? `<div class="admin-row" style="margin-top:8px;"><button class="danger" data-act="remove" disabled>從此預約移除</button></div>` : '' }
+        </div>
+      `;
+    }
+
+    /* ADMIN target — only OWNER can change them */
+    if (u.status === STATUS.ADMIN && !isOwner()){
+      return `
+        <div class="admin-panel">
+          <div class="label">管理員操作</div>
+          <div class="panel-notice">ADMIN 身份只有 OWNER 能變更。</div>
+          ${ context ? `<div class="admin-row" style="margin-top:8px;"><button class="danger" data-act="remove">從此預約移除</button></div>` : '' }
+        </div>
+      `;
+    }
+
     const adminFull = adminCount() >= MAX_ADMINS && u.status !== STATUS.ADMIN;
-    const hint = isLastAdmin ? '<span class="hint">這是最後一位管理員，無法降級或封鎖</span>' :
-                 adminFull ? `<span class="hint">已達管理員上限 (${MAX_ADMINS})</span>` : '';
+    const hint = adminFull ? `<span class="hint">已達管理員上限 (${MAX_ADMINS})</span>` : '';
     return `
       <div class="admin-panel">
         <div class="label">管理員操作 <span class="count">ADMIN ${adminCount()}/${MAX_ADMINS}</span></div>
@@ -1663,12 +2029,14 @@
         <div class="admin-row">
           ${ u.status === STATUS.BLOCKED
               ? `<button class="success" data-act="unblock">解除封鎖</button>`
-              : `<button class="danger" data-act="block" ${isLastAdmin?'disabled':''}>封鎖此用戶</button>` }
+              : `<button class="danger" data-act="block">封鎖此用戶</button>` }
         </div>
         <div class="admin-row">
-          <button data-act="role-member" ${u.status===STATUS.MEMBER||isLastAdmin?'disabled':''}>設為會員</button>
-          <button data-act="role-coach" ${u.status===STATUS.COACH||isLastAdmin?'disabled':''}>設為教練</button>
-          <button class="blue" data-act="role-admin" ${u.status===STATUS.ADMIN||adminFull?'disabled':''}>設為管理員</button>
+          <button data-act="role-member" ${u.status===STATUS.MEMBER?'disabled':''}>設為會員</button>
+          <button data-act="role-coach" ${u.status===STATUS.COACH?'disabled':''}>設為教練</button>
+          ${ isOwner()
+            ? `<button class="blue" data-act="role-admin" ${u.status===STATUS.ADMIN||adminFull?'disabled':''}>設為管理員</button>`
+            : '' }
           ${hint}
         </div>
       </div>
@@ -2011,30 +2379,39 @@
   function renderAdminPanel(){
     if (!sheet.classList.contains('is-admin-panel')) return;
     const adm = adminCount();
+    const own = ownerCount();
     const pn = pendingList();
     const dir = nonPendingList().sort((a,b) => {
-      const ord = { admin:0, coach:1, member:2, blocked:3 };
+      const ord = { owner:0, admin:1, coach:2, member:3, blocked:4 };
       return (ord[a.status]||9) - (ord[b.status]||9);
     });
+    const meIsOwner = isOwner();
+    const meBadge = meIsOwner ? '<span class="badge owner">OWNER</span>'
+                              : '<span class="badge admin">ADMIN</span>';
 
     sheet.innerHTML = `
       <div class="grab"></div>
       <div class="row">
-        <div class="a" style="background:var(--blue)">M</div>
-        <div style="flex:1;">
-          <div class="n">會員管理</div>
-          <div class="sb">管理員 ${adm}/${MAX_ADMINS} · 待審核 ${pn.length}</div>
+        <div class="a" style="background:var(--blue)">${me().ic}${avPicHTML(me())}</div>
+        <div style="flex:1; min-width:0;">
+          <div class="n">會員管理 ${meBadge}</div>
+          <div class="sb">擁有者 ${own} · 管理員 ${adm}/${MAX_ADMINS} · 待審核 ${pn.length}</div>
         </div>
       </div>
       <div class="admin-tabs">
-        <button class="${adminTab==='pending'?'active':''}" data-tab="pending">待審核 (${pn.length})</button>
-        <button class="${adminTab==='members'?'active':''}" data-tab="members">成員 (${dir.length})</button>
-        <button class="${adminTab==='coach'?'active':''}" data-tab="coach">教練課</button>
+        <button class="${adminTab==='pending'?'active':''}" data-tab="pending">待審核${pn.length?` (${pn.length})`:''}</button>
+        <button class="${adminTab==='members'?'active':''}" data-tab="members">成員管理</button>
+        <button class="${adminTab==='coach'?'active':''}"   data-tab="coach">教練管理</button>
+        <button class="${adminTab==='attend'?'active':''}"  data-tab="attend">出席統計</button>
+        <button class="${adminTab==='admins'?'active':''}"  data-tab="admins">管理員設定</button>
       </div>
       <div id="admin-list">${
         adminTab === 'pending' ? renderPendingList(pn) :
-        adminTab === 'members' ? renderDirectory(dir) :
-        renderCoachManagement()
+        adminTab === 'members' ? renderDirectory(dir)  :
+        adminTab === 'coach'   ? renderCoachManagement() :
+        adminTab === 'attend'  ? renderAttendanceStats() :
+        adminTab === 'admins'  ? renderAdminSettings() :
+        renderPendingList(pn)
       }</div>
     `;
 
@@ -2065,25 +2442,62 @@
   }
 
   function renderDirectory(list){
+    const meIsOwner = isOwner();
+    const adminFullGlobal = adminCount() >= MAX_ADMINS;
     return list.map(u => {
       const isMe = u.userId === currentUserId;
-      const isLastAdm = u.status === STATUS.ADMIN && adminCount() <= 1;
-      const adminFull = adminCount() >= MAX_ADMINS && u.status !== STATUS.ADMIN;
+      const isOwn = u.status === STATUS.OWNER;
+      const isAdminTarget = u.status === STATUS.ADMIN;
       const blocked = u.status === STATUS.BLOCKED;
+      const youBadge = isMe ? '<span class="badge mine">YOU</span>' : '';
+      const statusBadge = `<span class="badge ${u.status}">${labelForStatus(u.status)}</span>`;
+
+      /* OWNER row — read-only, no buttons for anyone */
+      if (isOwn){
+        return `
+          <div class="user-row">
+            <div class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</div>
+            <div class="info">
+              <div class="nm">${u.displayName} ${statusBadge} ${youBadge}</div>
+              <div class="uid">${u.userId} · NTRP ${u.ntrp || '—'} · ${u.playCount||0} 次</div>
+            </div>
+            <div class="ops"><span class="lock-note">永久</span></div>
+          </div>
+        `;
+      }
+
+      /* ADMIN row when viewer is not OWNER — read-only with notice */
+      if (isAdminTarget && !meIsOwner){
+        return `
+          <div class="user-row">
+            <div class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</div>
+            <div class="info">
+              <div class="nm">${u.displayName} ${statusBadge} ${youBadge}</div>
+              <div class="uid">${u.userId} · NTRP ${u.ntrp || '—'} · ${u.playCount||0} 次</div>
+            </div>
+            <div class="ops"><span class="lock-note">由 OWNER 管理</span></div>
+          </div>
+        `;
+      }
+
+      /* Regular member / coach / blocked / admin-when-viewer-is-OWNER */
+      const adminFull = adminFullGlobal && !isAdminTarget;
       return `
         <div class="user-row">
           <div class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</div>
           <div class="info">
-            <div class="nm">${u.displayName} <span class="badge ${u.status}">${labelForStatus(u.status)}</span> ${isMe ? '<span class="badge mine">YOU</span>' : ''}</div>
+            <div class="nm">${u.displayName} ${statusBadge} ${youBadge}</div>
             <div class="uid">${u.userId} · NTRP ${u.ntrp || '—'} · ${u.playCount||0} 次</div>
           </div>
           <div class="ops">
             ${ blocked
                 ? `<button class="green" data-act="unblock" data-uid="${u.userId}">解封</button>`
-                : `<button class="red"   data-act="block"   data-uid="${u.userId}" ${isLastAdm||isMe?'disabled':''}>封鎖</button>` }
-            <button data-act="role-member" data-uid="${u.userId}" ${u.status===STATUS.MEMBER||isLastAdm?'disabled':''}>會員</button>
-            <button data-act="role-coach"  data-uid="${u.userId}" ${u.status===STATUS.COACH ||isLastAdm?'disabled':''}>教練</button>
-            <button data-act="role-admin"  data-uid="${u.userId}" ${u.status===STATUS.ADMIN ||adminFull?'disabled':''}>管理員</button>
+                : `<button class="red"   data-act="block"   data-uid="${u.userId}" ${isMe?'disabled':''}>封鎖</button>` }
+            <button data-act="role-member" data-uid="${u.userId}" ${u.status===STATUS.MEMBER?'disabled':''}>會員</button>
+            <button data-act="role-coach"  data-uid="${u.userId}" ${u.status===STATUS.COACH ?'disabled':''}>教練</button>
+            ${ meIsOwner
+              ? `<button class="blue" data-act="role-admin" data-uid="${u.userId}" ${u.status===STATUS.ADMIN||adminFull?'disabled':''}>管理員</button>`
+              : '' }
           </div>
         </div>
       `;
@@ -2131,6 +2545,213 @@
     `;
   }
 
+  /* ============================================================
+     ATTENDANCE STATS — derived metrics for the admin dashboard
+  ============================================================ */
+  function computeStats(){
+    const playingStatuses = [STATUS.MEMBER, STATUS.COACH, STATUS.ADMIN, STATUS.OWNER];
+    const playing = Object.values(USERS).filter(u => playingStatuses.indexOf(u.status) >= 0);
+
+    const totalPlayCount = playing.reduce((s,u) => s + (u.playCount||0), 0);
+    const sortedDesc = playing.slice().sort((a,b) => (b.playCount||0) - (a.playCount||0));
+    const topActive = sortedDesc.slice(0, 5);
+    /* Low-attendance: members/coaches sorted ascending, top 5 — exclude OWNER/ADMIN
+       to surface members who actually need outreach. */
+    const attentionPool = playing.filter(u =>
+      u.status === STATUS.MEMBER || u.status === STATUS.COACH
+    );
+    const lowActive = attentionPool.slice()
+      .sort((a,b) => (a.playCount||0) - (b.playCount||0))
+      .slice(0, 5);
+
+    /* Coach sessions: count slots where k='coach' (head only, not tails). */
+    let coachSessions = 0;
+    /* Current bookings on the demo board — proxy for "this month" in absence of a real calendar */
+    let currentBookings = 0;
+    ['A','B'].forEach(c => {
+      Object.values(courts[c] || {}).forEach(slot => {
+        ['top','bottom'].forEach(side => {
+          const h = slot[side]; if (!h) return;
+          if (h.k === 'coach') coachSessions++;
+          if (h.k !== 'coach' && h.k !== 'coach-tail'){
+            currentBookings += (h.p || []).length;
+          }
+        });
+      });
+    });
+
+    /* Synthesised "this month" attendance: sum of recent slice of playCount.
+       Lacking real history, we use ~25% of total as a reasonable monthly window. */
+    const monthlyAttendance = Math.round(totalPlayCount * 0.25) + currentBookings;
+
+    return {
+      totalPlayCount,
+      monthlyAttendance,
+      currentBookings,
+      coachSessions,
+      activeMembers: playing.length,
+      topActive,
+      lowActive,
+      pendingCount: pendingList().length,
+      blockedCount: Object.values(USERS).filter(u => u.status === STATUS.BLOCKED).length
+    };
+  }
+
+  function rankRowHTML(u, idx, opts){
+    const max = (opts && opts.max) || 1;
+    const pct = Math.max(2, Math.round(((u.playCount||0) / max) * 100));
+    const rkCls = idx === 0 ? 'top1' : (idx <= 2 ? 'top'+(idx+1) : '');
+    const role = u.status === STATUS.OWNER ? '<span class="badge owner" style="margin-left:6px;">OWNER</span>'
+               : u.status === STATUS.COACH ? '<span class="badge coach" style="margin-left:6px;">COACH</span>'
+               : u.status === STATUS.ADMIN ? '<span class="badge admin" style="margin-left:6px;">ADMIN</span>' : '';
+    const barCls = (opts && opts.barCls) || '';
+    return `
+      <div class="rank-row">
+        <div class="rk ${rkCls}">#${idx+1}</div>
+        <div class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</div>
+        <div class="nm">${u.displayName}${role}<span class="sub">NTRP ${u.ntrp || '—'}</span></div>
+        <div class="bar ${barCls}"><i style="width:${pct}%"></i></div>
+        <div class="num">${u.playCount||0}</div>
+      </div>
+    `;
+  }
+
+  function renderAttendanceStats(){
+    const s = computeStats();
+    const topMax = (s.topActive[0] && s.topActive[0].playCount) || 1;
+
+    return `
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="label">總出席次數</div>
+          <div class="value">${s.totalPlayCount}</div>
+          <div class="delta">所有成員累計</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">本月出席</div>
+          <div class="value">${s.monthlyAttendance}</div>
+          <div class="delta up">▲ 含目前掛牌 ${s.currentBookings}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">教練課場次</div>
+          <div class="value">${s.coachSessions}</div>
+          <div class="delta">已排定</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">活躍成員</div>
+          <div class="value">${s.activeMembers}</div>
+          <div class="delta">含教練/管理員</div>
+        </div>
+      </div>
+
+      <div class="rank-list">
+        <div class="title"><span>最活躍成員 · TOP 5</span><span class="hint">total play count</span></div>
+        ${ s.topActive.length === 0
+          ? `<div class="empty-state" style="padding:14px 0;">尚無資料</div>`
+          : s.topActive.map((u,i) => rankRowHTML(u, i, { max: topMax })).join('') }
+      </div>
+
+      <div class="rank-list">
+        <div class="title"><span>低出席成員 · 需鼓勵</span><span class="hint">play count ascending</span></div>
+        ${ s.lowActive.length === 0
+          ? `<div class="empty-state" style="padding:14px 0;">尚無資料</div>`
+          : s.lowActive.map((u,i) => rankRowHTML(u, i, { max: topMax, barCls: 'amber' })).join('') }
+      </div>
+
+      <div class="stats-grid" style="margin-top:4px;">
+        <div class="stat-card">
+          <div class="label">待審核</div>
+          <div class="value">${s.pendingCount}</div>
+          <div class="delta">需要處理</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">封鎖名單</div>
+          <div class="value">${s.blockedCount}</div>
+          <div class="delta">無法使用系統</div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ============================================================
+     ADMIN SETTINGS TAB — only OWNER can promote/demote admins
+  ============================================================ */
+  function renderAdminSettings(){
+    const own = isOwner();
+    const owners = Object.values(USERS).filter(u => u.status === STATUS.OWNER);
+    const admins = Object.values(USERS).filter(u => u.status === STATUS.ADMIN);
+    const promoteTargets = Object.values(USERS).filter(u =>
+      u.status === STATUS.MEMBER || u.status === STATUS.COACH
+    );
+    const slotLeft = Math.max(0, MAX_ADMINS - admins.length);
+
+    const ownersHTML = owners.map((u, i) => `
+      <div class="rank-row">
+        <div class="rk top1">★</div>
+        <div class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</div>
+        <div class="nm">${u.displayName}<span class="sub">${u.userId === currentUserId ? 'you · 你' : '系統擁有者'}</span></div>
+        <div class="lock-note">永久 · 不可變更</div>
+      </div>
+    `).join('');
+
+    const adminsHTML = admins.length === 0
+      ? `<div class="empty-state" style="padding:14px 0;">目前沒有管理員</div>`
+      : admins.map(u => `
+        <div class="rank-row">
+          <div class="rk">A</div>
+          <div class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</div>
+          <div class="nm">${u.displayName}<span class="sub">NTRP ${u.ntrp || '—'} · ${u.playCount||0} 次</span></div>
+          ${ own
+            ? `<div class="ops"><button class="danger" data-act="role-member" data-uid="${u.userId}">撤銷</button></div>`
+            : `<div class="lock-note">由 OWNER 管理</div>` }
+        </div>
+      `).join('');
+
+    return `
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="label">OWNER</div>
+          <div class="value">${owners.length}</div>
+          <div class="delta">系統擁有者</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">ADMIN ${admins.length}/${MAX_ADMINS}</div>
+          <div class="value">${slotLeft}</div>
+          <div class="delta">剩餘配額</div>
+        </div>
+      </div>
+
+      <div class="rank-list">
+        <div class="title"><span>OWNER · 系統擁有者</span><span class="hint">不可變更</span></div>
+        ${ownersHTML}
+      </div>
+
+      <div class="rank-list">
+        <div class="title"><span>ADMIN · 管理員 (${admins.length}/${MAX_ADMINS})</span><span class="hint">${own ? '可撤銷' : '唯讀'}</span></div>
+        ${adminsHTML}
+      </div>
+
+      ${ own
+        ? `<div class="promote-form">
+            <div class="ttl"><span>升級為管理員</span><span class="hint" style="font-size:9px; color:var(--ink-mute); letter-spacing:.04em;">剩餘 ${slotLeft} 位</span></div>
+            ${ slotLeft <= 0
+              ? `<div class="empty-state" style="padding:6px 0 0;">已達上限 ${MAX_ADMINS}，請先撤銷既有管理員</div>`
+              : `
+                <select id="promote-pick">
+                  <option value="">— 選擇成員 —</option>
+                  ${promoteTargets.map(u => `<option value="${u.userId}">${u.displayName} · ${labelForStatus(u.status)} · ${u.playCount||0} 次</option>`).join('')}
+                </select>
+                <button data-act="promote-admin" ${promoteTargets.length===0?'disabled':''}>指派為管理員</button>
+              ` }
+          </div>`
+        : `<div class="panel-notice">
+            <strong>權限說明：</strong>只有 OWNER 可以升級或撤銷管理員身份。<br>
+            如需新增或調整管理員，請聯繫系統擁有者。
+          </div>`
+      }
+    `;
+  }
+
   function bindAdminListActions(){
     sheet.querySelectorAll('#admin-list button').forEach(b => {
       b.addEventListener('click', () => {
@@ -2143,6 +2764,11 @@
         if (act === 'role-member') return setStatus(uid, STATUS.MEMBER);
         if (act === 'role-coach')  return setStatus(uid, STATUS.COACH);
         if (act === 'role-admin')  return setStatus(uid, STATUS.ADMIN);
+        if (act === 'promote-admin'){
+          const sel = sheet.querySelector('#promote-pick');
+          if (!sel || !sel.value){ showToast('請先選擇成員', true); return; }
+          return setStatus(sel.value, STATUS.ADMIN);
+        }
         if (act === 'add-coach')   return openAddCoachSession();
         if (act === 'open-coach'){
           const c = b.getAttribute('data-court'),
@@ -2180,6 +2806,9 @@
     let found = null;
     ['A','B'].forEach(c => {
       if (found) return;
+      /* Same-court / same-time uniqueness: skip this whole court if user
+         already has a slot on top OR bottom of this court at this time. */
+      if (userOnSameCourtTime(currentUserId, c, t)) return;
       const slot = courts[c][t];
       ['top','bottom'].forEach(k => {
         if (found) return;
@@ -2205,6 +2834,14 @@
     }
     if ((half.p || []).indexOf(currentUserId) >= 0){
       showToast('你已在此預約', true); return;
+    }
+    /* Same-court / same-time uniqueness: block if already on the OTHER half
+       of the same court at the same time. Cross-court bookings stay allowed. */
+    const otherSide = ctx.side === 'top' ? 'bottom' : 'top';
+    const other = slot[otherSide];
+    if (other && (other.p || []).indexOf(currentUserId) >= 0){
+      showToast('同一時段同一球場只能掛牌一次', true);
+      return;
     }
 
     const adj = adjacentBookingCount(currentUserId, ctx.court, ctx.time);
@@ -2240,6 +2877,13 @@
     const half = slot[ctx.side];
     if (!half || !isReplaceableEntry(half, targetUid)){
       showToast('此預約無法被替補', true); return;
+    }
+    /* Same-court / same-time uniqueness still applies to replacements */
+    const otherSide = ctx.side === 'top' ? 'bottom' : 'top';
+    const other = slot[otherSide];
+    if (other && (other.p || []).indexOf(currentUserId) >= 0){
+      showToast('同一時段同一球場只能掛牌一次', true);
+      return;
     }
     const adj = adjacentBookingCount(currentUserId, ctx.court, ctx.time);
     if (adj > 0){
@@ -2281,14 +2925,14 @@
           ic: 'M',
           cl: '#4A6B8A',
           pictureUrl: pictureUrl || null,
-          status: STATUS.ADMIN,
+          status: STATUS.OWNER,
           createdAt: '2026-04-30',
           ntrp: '—',
           playCount: 0,
           strengths: []
         };
       } else {
-        USERS[userId].status = STATUS.ADMIN;
+        USERS[userId].status = STATUS.OWNER;
         USERS[userId].displayName = displayName || USERS[userId].displayName;
         USERS[userId].pictureUrl = pictureUrl || USERS[userId].pictureUrl;
       }
