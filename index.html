@@ -1022,6 +1022,9 @@
   ============================================================ */
   const MAX_ADMINS = 5;
   const MAX_STUDENTS = 4;
+  /* Bootstrap admin: real LINE userId that must always have ADMIN status,
+     never fall into PENDING or BLOCKED, and route directly to the app. */
+  const BOOTSTRAP_ADMIN_ID = 'Ublcc54fbbecfcea070a29ce8762fb05b';
   const STATUS = {
     PENDING: 'pending',
     MEMBER:  'member',
@@ -2268,24 +2271,46 @@
      - When LIFF_ID is the placeholder, fall back to demo mode.
   ============================================================ */
   function handleLogin(userId, displayName, pictureUrl){
+    const isBootstrap = (userId === BOOTSTRAP_ADMIN_ID);
     const isFirstLogin = !USERS[userId];
+
     if (isFirstLogin){
-      USERS[userId] = {
-        userId,
-        displayName: displayName || '新會員',
-        ic: (displayName || '新').slice(0,1),
-        cl: '#A8A89C',
-        pictureUrl: pictureUrl || null,
-        status: STATUS.PENDING,
-        createdAt: new Date().toISOString().slice(0,10),
-        ntrp: '—', playCount: 0, strengths: []
-      };
-      showToast('已建立帳號 · 等待管理員審核');
+      /* Bootstrap admin: even if the seed entry was lost, recreate as ADMIN
+         and skip the pending-approval flow entirely. */
+      if (isBootstrap){
+        USERS[userId] = {
+          userId,
+          displayName: displayName || 'Maverick 小猴',
+          ic: (displayName || 'M').slice(0,1),
+          cl: '#4A6B8A',
+          pictureUrl: pictureUrl || null,
+          status: STATUS.ADMIN,
+          createdAt: new Date().toISOString().slice(0,10),
+          ntrp: '—', playCount: 0, strengths: []
+        };
+      } else {
+        USERS[userId] = {
+          userId,
+          displayName: displayName || '新會員',
+          ic: (displayName || '新').slice(0,1),
+          cl: '#A8A89C',
+          pictureUrl: pictureUrl || null,
+          status: STATUS.PENDING,
+          createdAt: new Date().toISOString().slice(0,10),
+          ntrp: '—', playCount: 0, strengths: []
+        };
+        showToast('已建立帳號 · 等待管理員審核');
+      }
     } else {
       /* Refresh LINE profile fields on every login */
       const u = USERS[userId];
       if (displayName) { u.displayName = displayName; u.ic = displayName.slice(0,1); }
       if (pictureUrl != null) u.pictureUrl = pictureUrl;
+      /* Bootstrap admin self-heal: if anything ever flipped them off ADMIN,
+         restore on next LIFF login. They route straight to the app. */
+      if (isBootstrap && u.status !== STATUS.ADMIN){
+        u.status = STATUS.ADMIN;
+      }
     }
     currentUserId = userId;
     refreshDemoBar();
