@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -1024,7 +1024,7 @@
   const MAX_STUDENTS = 4;
   /* Bootstrap admin: real LINE userId that must always have ADMIN status,
      never fall into PENDING or BLOCKED, and route directly to the app. */
-  const BOOTSTRAP_ADMIN_ID = 'Ublcc54fbbecfcea070a29ce8762fb05b';
+  const BOOTSTRAP_ADMIN_ID = 'Ub1cc54fbbecfcea070a29ce8762fb05b';
   const STATUS = {
     PENDING: 'pending',
     MEMBER:  'member',
@@ -1064,7 +1064,7 @@
     'U0000000015': { userId:'U0000000015', displayName:'被封鎖者',    ic:'X', cl:'#888888', status:STATUS.BLOCKED, createdAt:'2026-03-10', ntrp:'2.5', playCount:3,  strengths:[] },
     /* Real LINE userId — bootstrap admin. handleLogin() will refresh
        displayName / pictureUrl on every LIFF login but preserve status. */
-    'Ublcc54fbbecfcea070a29ce8762fb05b': { userId:'Ublcc54fbbecfcea070a29ce8762fb05b', displayName:'Maverick 小猴', ic:'M', cl:'#4A6B8A', status:STATUS.ADMIN, createdAt:'2026-04-30', ntrp:'—', playCount:0, strengths:[] }
+    'Ub1cc54fbbecfcea070a29ce8762fb05b': { userId:'Ub1cc54fbbecfcea070a29ce8762fb05b', displayName:'Maverick 小猴', ic:'M', cl:'#4A6B8A', status:STATUS.ADMIN, createdAt:'2026-04-30', ntrp:'—', playCount:0, strengths:[] }
   };
 
   let currentUserId = 'U0000000001';
@@ -2271,46 +2271,51 @@
      - When LIFF_ID is the placeholder, fall back to demo mode.
   ============================================================ */
   function handleLogin(userId, displayName, pictureUrl){
-    const isBootstrap = (userId === BOOTSTRAP_ADMIN_ID);
-    const isFirstLogin = !USERS[userId];
-
-    if (isFirstLogin){
-      /* Bootstrap admin: even if the seed entry was lost, recreate as ADMIN
-         and skip the pending-approval flow entirely. */
-      if (isBootstrap){
+    /* Bootstrap admin: always ADMIN, never PENDING, never BLOCKED.
+       This branch runs first so the regular pending flow can't touch them. */
+    if (userId === BOOTSTRAP_ADMIN_ID) {
+      if (!USERS[userId]) {
         USERS[userId] = {
           userId,
           displayName: displayName || 'Maverick 小猴',
-          ic: (displayName || 'M').slice(0,1),
+          ic: 'M',
           cl: '#4A6B8A',
           pictureUrl: pictureUrl || null,
           status: STATUS.ADMIN,
-          createdAt: new Date().toISOString().slice(0,10),
-          ntrp: '—', playCount: 0, strengths: []
+          createdAt: '2026-04-30',
+          ntrp: '—',
+          playCount: 0,
+          strengths: []
         };
       } else {
-        USERS[userId] = {
-          userId,
-          displayName: displayName || '新會員',
-          ic: (displayName || '新').slice(0,1),
-          cl: '#A8A89C',
-          pictureUrl: pictureUrl || null,
-          status: STATUS.PENDING,
-          createdAt: new Date().toISOString().slice(0,10),
-          ntrp: '—', playCount: 0, strengths: []
-        };
-        showToast('已建立帳號 · 等待管理員審核');
+        USERS[userId].status = STATUS.ADMIN;
+        USERS[userId].displayName = displayName || USERS[userId].displayName;
+        USERS[userId].pictureUrl = pictureUrl || USERS[userId].pictureUrl;
       }
+      currentUserId = userId;
+      refreshDemoBar();
+      route();
+      return;
+    }
+
+    /* Regular flow: first login → PENDING; subsequent logins → refresh profile. */
+    const isFirstLogin = !USERS[userId];
+    if (isFirstLogin){
+      USERS[userId] = {
+        userId,
+        displayName: displayName || '新會員',
+        ic: (displayName || '新').slice(0,1),
+        cl: '#A8A89C',
+        pictureUrl: pictureUrl || null,
+        status: STATUS.PENDING,
+        createdAt: new Date().toISOString().slice(0,10),
+        ntrp: '—', playCount: 0, strengths: []
+      };
+      showToast('已建立帳號 · 等待管理員審核');
     } else {
-      /* Refresh LINE profile fields on every login */
       const u = USERS[userId];
       if (displayName) { u.displayName = displayName; u.ic = displayName.slice(0,1); }
       if (pictureUrl != null) u.pictureUrl = pictureUrl;
-      /* Bootstrap admin self-heal: if anything ever flipped them off ADMIN,
-         restore on next LIFF login. They route straight to the app. */
-      if (isBootstrap && u.status !== STATUS.ADMIN){
-        u.status = STATUS.ADMIN;
-      }
     }
     currentUserId = userId;
     refreshDemoBar();
