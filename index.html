@@ -1058,7 +1058,10 @@
     'U0000000012': { userId:'U0000000012', displayName:'Coach Tina',ic:'T', cl:'#2A4036', status:STATUS.COACH,   createdAt:'2026-01-04', ntrp:'5.0', playCount:96,  strengths:['前面','後面'] },
     'U0000000013': { userId:'U0000000013', displayName:'新人 Nora',  ic:'N', cl:'#A8A89C', status:STATUS.PENDING, createdAt:'2026-04-25', ntrp:'—',   playCount:0,  strengths:[] },
     'U0000000014': { userId:'U0000000014', displayName:'新人 Owen',  ic:'O', cl:'#9C8A78', status:STATUS.PENDING, createdAt:'2026-04-26', ntrp:'—',   playCount:0,  strengths:[] },
-    'U0000000015': { userId:'U0000000015', displayName:'被封鎖者',    ic:'X', cl:'#888888', status:STATUS.BLOCKED, createdAt:'2026-03-10', ntrp:'2.5', playCount:3,  strengths:[] }
+    'U0000000015': { userId:'U0000000015', displayName:'被封鎖者',    ic:'X', cl:'#888888', status:STATUS.BLOCKED, createdAt:'2026-03-10', ntrp:'2.5', playCount:3,  strengths:[] },
+    /* Real LINE userId — bootstrap admin. handleLogin() will refresh
+       displayName / pictureUrl on every LIFF login but preserve status. */
+    'Ublcc54fbbecfcea070a29ce8762fb05b': { userId:'Ublcc54fbbecfcea070a29ce8762fb05b', displayName:'Maverick 小猴', ic:'M', cl:'#4A6B8A', status:STATUS.ADMIN, createdAt:'2026-04-30', ntrp:'—', playCount:0, strengths:[] }
   };
 
   let currentUserId = 'U0000000001';
