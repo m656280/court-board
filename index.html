@@ -1,0 +1,2453 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#EAE2D2">
+<title>Court Board</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+  :root {
+    --bg: #EAE2D2;
+    --bg-card-from: #DFD5C0;
+    --bg-card-to: #D4C9AF;
+    --ink: #2D3D34;
+    --ink-soft: #6B7E72;
+    --ink-mute: #8A9A8E;
+    --court-from: #6E8579;
+    --court-to: #5C7368;
+    --line: rgba(255,255,255,.7);
+    --slot-bg: #EFE6D2;
+    --green: #6B8579;
+    --green-soft: #8DC189;
+    --red: #B73E3E;
+    --red-soft: #E27A78;
+    --coach-from: #2A4036;
+    --coach-to: #1A2A22;
+    --gray: #C8BFAA;
+    --blue: #4A6B8A;
+    --blue-soft: #6B8AA8;
+    --blue-pale: #DCE5EE;
+    --line-green: #06C755;
+    --amber: #C8893A;
+    --amber-pale: #F4E5CB;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans TC", "PingFang TC", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* DEMO BAR — remove in production LIFF deployment */
+  .demo-bar {
+    position: sticky; top: 0; z-index: 60;
+    background: #1F2D26; color: #C9DBC9;
+    padding: 8px 12px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    flex-wrap: wrap;
+  }
+  .demo-bar .tag {
+    font-size: 9px; font-weight: 700; letter-spacing: .14em;
+    background: rgba(255,255,255,.1); padding: 3px 7px;
+    border-radius: 4px; color: #DCEAD8;
+  }
+  .demo-bar select, .demo-bar button {
+    background: rgba(255,255,255,.08); color: #E8EFE5;
+    border: 0.5px solid rgba(255,255,255,.15);
+    border-radius: 6px; padding: 4px 8px;
+    font-size: 11px; cursor: pointer; font-family: inherit;
+  }
+  .demo-bar select { max-width: 200px; }
+  .demo-bar .who { margin-left: auto; opacity: .7; font-size: 10px; }
+  .demo-bar button:hover { background: rgba(255,255,255,.14); }
+
+  /* GENERIC SCREEN WRAPPER */
+  .cb {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 18px 16px 100px;
+    padding-top: max(18px, env(safe-area-inset-top));
+    padding-bottom: max(100px, calc(100px + env(safe-area-inset-bottom)));
+  }
+
+  .screen {
+    display: none;
+    min-height: calc(100vh - 40px);
+    min-height: calc(100dvh - 40px);
+  }
+  .screen.active { display: block; }
+
+  /* LOGIN SCREEN */
+  .login-wrap {
+    max-width: 360px; margin: 0 auto;
+    padding: 80px 24px 40px;
+    text-align: center;
+  }
+  .login-logo {
+    width: 64px; height: 64px; margin: 0 auto 20px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--court-from), var(--court-to));
+    color: #FFF;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 700;
+    box-shadow: 0 6px 18px rgba(40,55,45,.22);
+    letter-spacing: -1px;
+  }
+  .login-wrap h1 {
+    font-size: 24px; font-weight: 600; margin: 0 0 8px; letter-spacing: .02em;
+  }
+  .login-wrap .lead {
+    font-size: 13px; color: var(--ink-soft); margin: 0 0 36px; line-height: 1.6;
+  }
+  .line-btn {
+    width: 100%; height: 50px; border-radius: 999px;
+    background: var(--line-green); color: #FFF;
+    border: 0; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 4px 12px rgba(6,199,85,.3);
+    letter-spacing: .04em;
+  }
+  .line-btn:hover { background: #05B14C; }
+  .line-btn .ico {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #FFF; color: var(--line-green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .login-wrap .legal {
+    font-size: 10px; color: var(--ink-mute); margin-top: 18px; line-height: 1.6;
+  }
+
+  /* PENDING / BLOCKED SCREEN */
+  .status-screen {
+    max-width: 380px; margin: 0 auto;
+    padding: 60px 24px 40px;
+    text-align: center;
+  }
+  .status-icon {
+    width: 72px; height: 72px; margin: 0 auto 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(45,61,52,.1);
+  }
+  .status-icon.pending { background: var(--amber-pale); color: var(--amber); }
+  .status-icon.blocked { background: rgba(183,62,62,.14); color: var(--red); }
+  .status-icon svg { width: 32px; height: 32px; }
+  .status-screen h2 { font-size: 20px; font-weight: 600; margin: 0 0 10px; }
+  .status-screen p { font-size: 13px; color: var(--ink-soft); line-height: 1.7; margin: 0 0 8px; }
+  .status-screen .en {
+    font-size: 11px; color: var(--ink-mute); font-style: italic;
+    margin-top: 4px; line-height: 1.6;
+  }
+  .status-screen .meta-card {
+    margin-top: 28px; padding: 14px 16px;
+    background: #FFF; border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(60,75,65,.07);
+    text-align: left;
+  }
+  .status-screen .meta-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 12px; }
+  .status-screen .meta-row .k { color: var(--ink-soft); }
+  .status-screen .meta-row .v { color: var(--ink); font-weight: 500; font-family: ui-monospace, monospace; font-size: 11px; }
+  .status-screen .small-action {
+    margin-top: 16px; font-size: 11px; color: var(--ink-soft);
+  }
+  .status-screen .small-action a {
+    color: var(--blue); text-decoration: none; font-weight: 500;
+  }
+
+  /* APP HEADER */
+  .cb-top {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 2px; gap: 8px;
+  }
+  .cb-brand { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: .16em; color: var(--ink); }
+  .cb-brand .d { width: 5px; height: 5px; border-radius: 50%; background: var(--red); }
+  .cb-meta { font-size: 11px; color: var(--ink-soft); letter-spacing: .04em; }
+  .cb-actions { display: flex; align-items: center; gap: 8px; }
+
+  .cb-admin-btn {
+    position: relative;
+    background: var(--blue); color: #FFF;
+    border: 0; padding: 5px 10px; border-radius: 999px;
+    font-size: 10px; font-weight: 600; cursor: pointer;
+    letter-spacing: .06em; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .cb-admin-btn .pcount {
+    background: #FFF; color: var(--blue);
+    font-size: 9px; padding: 1px 5px;
+    border-radius: 999px; min-width: 14px; text-align: center;
+    font-weight: 700;
+  }
+  .cb-admin-btn:hover { background: #3F5C77; }
+
+  .cb-me {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(45,61,52,.06);
+    padding: 4px 10px 4px 4px; border-radius: 999px;
+    cursor: pointer; border: 0; font-family: inherit;
+  }
+  .cb-me .av {
+    width: 22px; height: 22px; border-radius: 50%;
+    color: #FFF; font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cb-me .nm { font-size: 11px; color: var(--ink); font-weight: 500; }
+
+  .cb-title { font-size: 22px; font-weight: 600; margin: 16px 2px 4px; letter-spacing: .01em; }
+  .cb-sub { font-size: 11px; color: var(--ink-soft); margin: 0 2px 16px; min-height: 14px; }
+
+  .cb-time {
+    position: relative;
+    padding: 12px 6px 14px;
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: var(--ink-mute);
+    border-bottom: 0.5px dashed rgba(45,61,52,.2);
+    margin-bottom: 16px;
+    letter-spacing: .04em;
+  }
+  .cb-now { position: absolute; top: 6px; bottom: -3px; width: 1px; background: var(--red); pointer-events: none; transition: left .25s ease; }
+  .cb-now::before {
+    content: ''; position: absolute; left: -3.5px; top: 0;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--red);
+    box-shadow: 0 0 0 3px rgba(183,62,62,.18);
+  }
+
+  .cb-grid { display: flex; flex-direction: column; gap: 14px; }
+
+  .cb-card {
+    position: relative;
+    background: linear-gradient(180deg, var(--bg-card-from) 0%, var(--bg-card-to) 100%);
+    border-radius: 16px;
+    padding: 14px 12px 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 14px rgba(60,75,65,.07);
+  }
+  .cb-info { position: absolute; top: 16px; left: 16px; z-index: 2; }
+  .cb-info .lab { font-size: 9px; letter-spacing: .2em; color: var(--ink-soft); }
+  .cb-info .ltr { font-size: 26px; font-weight: 600; color: #1F2D26; line-height: 1.05; margin-top: 3px; }
+  .cb-info .typ { font-size: 9px; color: var(--ink-mute); margin-top: 5px; letter-spacing: .06em; }
+
+  .cb-stage { position: relative; margin-left: 64px; height: 180px; }
+  .cb-mark {
+    position: absolute; left: -68px; bottom: -16px;
+    font-size: 110px; line-height: 1; font-weight: 700;
+    color: rgba(45,61,52,.07); pointer-events: none; z-index: 0;
+    letter-spacing: -4px;
+  }
+
+  .cb-court {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, var(--court-from) 0%, var(--court-to) 100%);
+    border-radius: 6px;
+    box-shadow:
+      0 6px 14px rgba(40,55,45,.18),
+      inset 0 0 0 0.5px rgba(255,255,255,.1);
+    overflow: hidden;
+  }
+  .cb-line { position: absolute; background: var(--line); pointer-events: none; }
+  .cb-line.t { left: 8px; right: 8px; top: 8px; height: 1px; }
+  .cb-line.b { left: 8px; right: 8px; bottom: 8px; height: 1px; }
+  .cb-line.lf { left: 8px; top: 8px; bottom: 8px; width: 1px; }
+  .cb-line.rf { right: 8px; top: 8px; bottom: 8px; width: 1px; }
+  .cb-line.svll { left: 8px; right: 50%; top: 50%; height: 1px; transform: translateY(-50%); }
+  .cb-line.svlr { left: 50%; right: 8px; top: 50%; height: 1px; transform: translateY(-50%); }
+  .cb-net {
+    position: absolute; left: 50%; top: 8px; bottom: 8px; width: 1.5px;
+    background: rgba(255,255,255,.85); transform: translateX(-50%);
+  }
+  .cb-net::before, .cb-net::after {
+    content: ''; position: absolute; left: -3px; width: 8px; height: 5px; background: rgba(255,255,255,.9);
+  }
+  .cb-net::before { top: -1px; }
+  .cb-net::after { bottom: -1px; }
+
+  /* Booking halves are HORIZONTAL strips: top (front / net side) and bottom (back / baseline side).
+     Coach occupies one whole strip; regular doubles still positions players left/right within a strip. */
+  .cb-half { position: absolute; left: 0; right: 0; height: 50%; z-index: 1; }
+  .cb-half.top    { top: 0; }
+  .cb-half.bottom { bottom: 0; }
+  .cb-half.full::after {
+    content: ''; position: absolute; inset: 6px 10px; border-radius: 4px;
+    background: rgba(183,62,62,.16);
+    border: 1px solid rgba(183,62,62,.42);
+    pointer-events: none;
+  }
+  .cb-half.mine::after {
+    content: ''; position: absolute; inset: 6px 10px; border-radius: 4px;
+    background: rgba(74,107,138,.18);
+    border: 1px solid rgba(74,107,138,.5);
+    pointer-events: none;
+  }
+  .cb-half-tag {
+    position: absolute; left: 12px; top: 6px;
+    font-size: 8px; letter-spacing: .12em;
+    color: rgba(255,255,255,.55); text-transform: uppercase;
+    pointer-events: none; z-index: 2;
+  }
+  .cb-half.bottom .cb-half-tag { top: auto; bottom: 6px; }
+
+  .cb-pill {
+    position: absolute;
+    display: inline-flex; align-items: center;
+    background: rgba(40,55,45,.72);
+    border-radius: 999px;
+    padding: 3px 10px 3px 3px;
+    box-shadow: 0 2px 5px rgba(0,0,0,.18);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform .15s;
+    border: 0; font-family: inherit;
+  }
+  .cb-pill:hover { transform: scale(1.04); }
+  .cb-pill .av {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: #FFF;
+    box-shadow: inset 0 0 0 0.5px rgba(255,255,255,.25);
+    position: relative; overflow: hidden;
+  }
+  /* LINE pictureUrl overlay — image is removed via onerror when it 404s,
+     letting the underlying initial-char + color circle show through. */
+  .cb-pill .av img,
+  .cb-me  .av img,
+  .cb-sheet .a img,
+  .user-row .av img,
+  .cb-coach .stu .a img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; border-radius: 50%;
+    display: block;
+  }
+  .cb-me  .av { position: relative; overflow: hidden; }
+  .cb-sheet .a { position: relative; overflow: hidden; }
+  .user-row .av { position: relative; overflow: hidden; }
+  .cb-coach .stu .a { position: relative; overflow: hidden; }
+  .cb-pill .nm { color: #FFF; font-size: 11px; margin-left: 7px; font-weight: 400; letter-spacing: .02em; max-width: 60px; overflow: hidden; text-overflow: ellipsis; }
+  .cb-pill .st { width: 6px; height: 6px; border-radius: 50%; background: var(--green-soft); margin-left: 8px; }
+  .cb-pill .st.f { background: var(--red-soft); }
+
+  .cb-pill.is-mine {
+    background: var(--blue);
+    box-shadow: 0 2px 6px rgba(74,107,138,.35);
+  }
+  .cb-pill.is-mine .av { background: #FFF !important; color: var(--blue) !important; }
+  .cb-pill.is-mine .st { background: #DCE5EE; }
+
+  /* Replaceable second-consecutive booking — visible but soft, with dashed outline */
+  .cb-pill.replaceable {
+    background: rgba(40,55,45,.42);
+    border: 1px dashed rgba(255,255,255,.45);
+    padding: 2px 9px 2px 2px;
+  }
+  .cb-pill.is-mine.replaceable {
+    background: rgba(74,107,138,.6);
+    border: 1px dashed rgba(255,255,255,.6);
+  }
+  .cb-pill .repl {
+    font-size: 8px; color: rgba(255,255,255,.85);
+    background: rgba(255,255,255,.18);
+    padding: 1px 5px; border-radius: 999px;
+    margin-left: 6px; letter-spacing: .04em;
+  }
+
+  .cb-pill.empty {
+    background: rgba(255,255,255,.18);
+    box-shadow: none;
+  }
+  .cb-pill.empty .av {
+    background: rgba(255,255,255,.3); color: rgba(255,255,255,.85);
+    border: 1px dashed rgba(255,255,255,.6);
+    box-shadow: none;
+  }
+  .cb-pill.empty .nm { opacity: .85; }
+
+  .cb-coach {
+    position: absolute; inset: 6px 8px; border-radius: 5px;
+    background: linear-gradient(135deg, var(--coach-from) 0%, var(--coach-to) 100%);
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex; flex-direction: column; justify-content: space-between;
+    box-shadow: inset 0 0 0 0.5px rgba(255,255,255,.08), 0 2px 6px rgba(0,0,0,.15);
+    z-index: 2;
+    border: 0; color: inherit; text-align: left; font-family: inherit;
+  }
+  .cb-coach .b {
+    align-self: flex-start;
+    font-size: 9px; padding: 2px 8px; border-radius: 999px;
+    background: rgba(255,255,255,.12); color: #C9DBC9;
+    letter-spacing: .14em; text-transform: uppercase;
+  }
+  .cb-coach .who { font-size: 13px; font-weight: 600; color: #E8EFE5; margin-top: 4px; }
+  .cb-coach .span { font-size: 10px; color: #A0B5A2; margin-top: 1px; }
+  .cb-coach .stu { display: flex; align-items: center; margin-top: 4px; flex-wrap: wrap; }
+  .cb-coach .stu .a {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1.5px solid var(--coach-from);
+    margin-right: -6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 600; color: #FFF;
+  }
+  .cb-coach .stu .ct { font-size: 9px; color: #C9DBC9; margin-left: 12px; letter-spacing: .04em; }
+
+  .cb-mine-mark {
+    position: absolute; top: 6px; right: 8px;
+    background: #FFF; color: var(--blue);
+    font-size: 9px; font-weight: 600;
+    padding: 2px 7px; border-radius: 999px;
+    box-shadow: 0 1px 3px rgba(74,107,138,.25);
+    letter-spacing: .04em;
+  }
+
+  .cb-slots {
+    display: flex; gap: 6px; overflow-x: auto;
+    scrollbar-width: none;
+    margin-top: 12px;
+    padding: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cb-slots::-webkit-scrollbar { display: none; }
+  .cb-slot {
+    flex: 0 0 auto; min-width: 64px;
+    padding: 9px 10px;
+    background: var(--slot-bg);
+    border-radius: 9px;
+    border: 0.5px solid transparent;
+    text-align: center;
+    cursor: pointer;
+    transition: transform .12s;
+    font-family: inherit;
+  }
+  .cb-slot:hover { transform: translateY(-1px); }
+  .cb-slot .t { font-size: 11px; font-weight: 600; color: var(--ink); line-height: 1.2; }
+  .cb-slot .s { font-size: 9px; color: var(--ink-soft); margin-top: 3px; letter-spacing: .04em; }
+  .cb-slot.full { background: var(--red); }
+  .cb-slot.full .t, .cb-slot.full .s { color: #FFF; }
+  .cb-slot.coach { background: linear-gradient(135deg, var(--coach-from), var(--coach-to)); }
+  .cb-slot.coach .t, .cb-slot.coach .s { color: #DCEAD8; }
+  .cb-slot.coach.tail { opacity: .55; }
+  .cb-slot.ended { background: rgba(45,61,52,.07); }
+  .cb-slot.ended .t, .cb-slot.ended .s { color: #9CA89F; }
+  .cb-slot.mine {
+    background: var(--blue-pale);
+    border-color: var(--blue);
+  }
+  .cb-slot.mine .t { color: var(--blue); }
+  .cb-slot.mine .s { color: var(--blue-soft); }
+  .cb-slot.repl::after {
+    content: '↻';
+    display: block; font-size: 9px;
+    color: var(--amber); margin-top: 1px;
+    letter-spacing: 0;
+  }
+  .cb-slot.active { box-shadow: 0 0 0 1.5px var(--ink); }
+  .cb-slot.mine.active { box-shadow: 0 0 0 1.5px var(--blue); }
+
+  .cb-legend {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    margin: 14px 4px 0;
+    font-size: 10px; color: var(--ink-soft);
+    align-items: center;
+  }
+  .cb-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .cb-legend i {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); display: inline-block;
+  }
+  .cb-legend i.f { background: var(--red); }
+  .cb-legend i.c { background: var(--coach-from); }
+  .cb-legend i.e { background: var(--gray); }
+  .cb-legend i.m { background: var(--blue); }
+  .cb-legend i.r { background: var(--amber); }
+
+  .cb-cta {
+    position: fixed; left: 0; right: 0;
+    bottom: 16px; bottom: max(16px, env(safe-area-inset-bottom));
+    display: flex; justify-content: center;
+    pointer-events: none;
+    z-index: 50;
+  }
+  .cb-cta .wrap {
+    width: 100%; max-width: 480px;
+    padding: 0 16px;
+    pointer-events: auto;
+  }
+  .cb-cta button {
+    width: 100%; height: 48px;
+    border-radius: 999px;
+    background: var(--ink); color: var(--bg);
+    border: 0; font-size: 13px; font-weight: 500; cursor: pointer;
+    letter-spacing: .04em;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 14px rgba(45,61,52,.22);
+    font-family: inherit;
+  }
+  .cb-cta button:hover { background: #1F2D26; }
+  .cb-cta .plus {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--bg); color: var(--ink);
+    font-size: 12px; line-height: 16px; font-weight: 600;
+  }
+
+  /* OVERLAY / SHEET */
+  .cb-overlay {
+    position: fixed; inset: 0;
+    background: rgba(45,61,52,.45);
+    z-index: 100;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .cb-overlay.show { display: flex; }
+  .cb-sheet {
+    background: #FFF;
+    border-radius: 16px 16px 0 0;
+    width: 100%; max-width: 480px;
+    padding: 18px 18px max(20px, env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 20px rgba(60,75,65,.18);
+    font-size: 13px;
+    animation: slideUp .25s ease;
+    max-height: 85vh; overflow-y: auto;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .cb-sheet .grab {
+    width: 40px; height: 4px; border-radius: 999px;
+    background: rgba(45,61,52,.15);
+    margin: 0 auto 14px;
+  }
+  .cb-sheet.is-mine { border-top: 3px solid var(--blue); }
+  .cb-sheet.is-admin-panel { border-top: 3px solid var(--blue); }
+  .cb-sheet.is-coach-form { border-top: 3px solid var(--coach-from); }
+
+  .cb-sheet .row { display: flex; align-items: center; gap: 12px; }
+  .cb-sheet .a {
+    width: 44px; height: 44px; border-radius: 50%;
+    color: #FFF; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    box-shadow: inset 0 0 0 0.5px rgba(255,255,255,.3);
+    flex-shrink: 0;
+    background-size: cover; background-position: center;
+  }
+  .cb-sheet .n { font-weight: 600; font-size: 15px; color: var(--ink); display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+  .cb-sheet .sb { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+  .cb-sheet .uid { font-family: ui-monospace, monospace; font-size: 10px; color: var(--ink-mute); }
+
+  .badge {
+    display: inline-block; font-size: 9px;
+    padding: 2px 7px; border-radius: 999px;
+    letter-spacing: .06em; font-weight: 600;
+  }
+  .badge.mine { background: var(--blue-pale); color: var(--blue); }
+  .badge.admin { background: var(--blue-pale); color: var(--blue); }
+  .badge.coach { background: rgba(42,64,54,.14); color: var(--coach-from); }
+  .badge.member { background: rgba(107,133,121,.18); color: var(--court-from); }
+  .badge.pending { background: var(--amber-pale); color: var(--amber); }
+  .badge.blocked { background: rgba(183,62,62,.14); color: var(--red); }
+
+  .cb-sheet button.act {
+    margin-left: auto; background: var(--ink); color: var(--bg);
+    border: 0; padding: 8px 14px; border-radius: 8px;
+    font-size: 12px; cursor: pointer; font-weight: 500;
+    font-family: inherit; flex-shrink: 0;
+  }
+  .cb-sheet button.act.mine { background: var(--blue); }
+  .cb-sheet button.act.danger { background: var(--red); }
+  .cb-sheet button.act.amber { background: var(--amber); }
+  .cb-sheet button.act:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* Profile stats — NTRP / 出席次數 */
+  .cb-sheet .stats { display: flex; gap: 8px; margin-top: 14px; }
+  .cb-sheet .stat {
+    flex: 1; background: #F4ECDA; border-radius: 8px; padding: 10px 12px;
+  }
+  .cb-sheet .stat .k { font-size: 9px; color: var(--ink-soft); letter-spacing: .08em; text-transform: uppercase; }
+  .cb-sheet .stat .v { font-size: 16px; font-weight: 600; color: var(--ink); margin-top: 3px; letter-spacing: .01em; }
+  .cb-sheet .stat .v.small { font-size: 12px; }
+
+  /* 擅長位置 tags */
+  .cb-strengths {
+    margin-top: 14px;
+  }
+  .cb-strengths .label {
+    font-size: 10px; color: var(--ink-soft);
+    letter-spacing: .08em; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .cb-strengths .tags {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .strength-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; padding: 5px 10px;
+    background: rgba(107,133,121,.14);
+    color: var(--court-from);
+    border-radius: 999px; font-weight: 500;
+  }
+  .strength-tag .en {
+    font-size: 9px; color: var(--ink-mute); font-weight: 400;
+    letter-spacing: .02em;
+  }
+  .cb-strengths .tags .empty {
+    font-size: 11px; color: var(--ink-mute); font-style: italic;
+  }
+
+  .cb-sheet .stulist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .cb-sheet .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; padding: 3px 9px 3px 3px;
+    background: #F4ECDA; border-radius: 999px;
+  }
+  .cb-sheet .chip .ca {
+    width: 18px; height: 18px; border-radius: 50%;
+    color: #FFF; font-size: 9px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cb-sheet .chip button.x {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: rgba(45,61,52,.12); border: 0;
+    color: var(--ink); font-size: 10px; line-height: 1;
+    cursor: pointer; margin-left: 2px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .admin-panel {
+    margin-top: 14px;
+    border-top: 1px solid rgba(45,61,52,.1);
+    padding-top: 12px;
+  }
+  .admin-panel .label {
+    font-size: 10px; color: var(--blue);
+    text-transform: uppercase; letter-spacing: .12em;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .admin-panel .label .count {
+    font-size: 9px; color: var(--ink-soft);
+    background: rgba(45,61,52,.08); padding: 2px 7px; border-radius: 999px;
+    letter-spacing: .06em; font-weight: 600;
+  }
+  .admin-row {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .admin-row button {
+    flex: 1; min-width: 0;
+    padding: 9px 10px;
+    background: #F4ECDA; color: var(--ink);
+    border: 0.5px solid rgba(45,61,52,.1);
+    border-radius: 8px; cursor: pointer;
+    font-size: 11px; font-weight: 500;
+    font-family: inherit;
+    transition: background .15s;
+  }
+  .admin-row button:hover { background: #EAE2D2; }
+  .admin-row button.danger { color: var(--red); border-color: rgba(183,62,62,.2); }
+  .admin-row button.danger:hover { background: rgba(183,62,62,.08); }
+  .admin-row button.blue { color: var(--blue); border-color: rgba(74,107,138,.2); }
+  .admin-row button.blue:hover { background: var(--blue-pale); }
+  .admin-row button.success { color: var(--court-from); border-color: rgba(107,133,121,.25); }
+  .admin-row button.success:hover { background: rgba(107,133,121,.12); }
+  .admin-row button.amber { color: var(--amber); border-color: rgba(200,137,58,.25); }
+  .admin-row button.amber:hover { background: rgba(200,137,58,.1); }
+  .admin-row button:disabled {
+    opacity: .35; cursor: not-allowed;
+    background: rgba(45,61,52,.04) !important;
+  }
+  .admin-row .hint {
+    flex-basis: 100%; font-size: 10px;
+    color: var(--ink-mute); margin-top: -2px;
+    font-style: italic;
+  }
+
+  /* COACH-SESSION FORM (admin) */
+  .form-row { margin-bottom: 12px; }
+  .form-row label {
+    display: block; font-size: 10px; color: var(--ink-soft);
+    letter-spacing: .08em; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 5px;
+  }
+  .form-row select, .form-row input {
+    width: 100%; padding: 9px 10px;
+    background: #F4ECDA;
+    border: 0.5px solid rgba(45,61,52,.12);
+    border-radius: 8px; font-size: 13px;
+    color: var(--ink); font-family: inherit;
+  }
+  .seg {
+    display: flex; gap: 4px;
+    background: rgba(45,61,52,.05); padding: 3px;
+    border-radius: 8px;
+  }
+  .seg button {
+    flex: 1; padding: 8px 10px;
+    background: transparent; border: 0;
+    border-radius: 6px; font-size: 12px;
+    color: var(--ink-soft); cursor: pointer; font-family: inherit;
+    font-weight: 500;
+  }
+  .seg button.active {
+    background: #FFF; color: var(--ink); font-weight: 600;
+    box-shadow: 0 1px 3px rgba(45,61,52,.08);
+  }
+  .student-grid {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    max-height: 180px; overflow-y: auto;
+    padding: 6px; background: #F4ECDA; border-radius: 8px;
+  }
+  .student-grid .sopt {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #FFF; padding: 5px 10px 5px 5px;
+    border-radius: 999px; font-size: 11px;
+    cursor: pointer; border: 1px solid transparent;
+    user-select: none;
+  }
+  .student-grid .sopt.on {
+    background: var(--blue-pale); border-color: var(--blue);
+    color: var(--blue); font-weight: 600;
+  }
+  .student-grid .sopt .ca {
+    width: 18px; height: 18px; border-radius: 50%;
+    color: #FFF; font-size: 9px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .form-actions {
+    display: flex; gap: 8px; margin-top: 14px;
+  }
+  .form-actions button {
+    flex: 1; height: 42px; border-radius: 8px;
+    border: 0; cursor: pointer; font-family: inherit;
+    font-size: 13px; font-weight: 600;
+  }
+  .form-actions .primary {
+    background: var(--coach-from); color: #E8EFE5;
+  }
+  .form-actions .secondary {
+    background: rgba(45,61,52,.08); color: var(--ink);
+  }
+  .form-actions button:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ADMIN MASTER PANEL */
+  .admin-tabs {
+    display: flex; gap: 4px;
+    margin-top: 10px; margin-bottom: 12px;
+    background: rgba(45,61,52,.05); padding: 3px;
+    border-radius: 8px;
+  }
+  .admin-tabs button {
+    flex: 1; padding: 7px 10px;
+    background: transparent; border: 0;
+    border-radius: 6px; font-size: 11px;
+    color: var(--ink-soft); cursor: pointer; font-family: inherit;
+    font-weight: 500;
+  }
+  .admin-tabs button.active {
+    background: #FFF; color: var(--ink); font-weight: 600;
+    box-shadow: 0 1px 3px rgba(45,61,52,.08);
+  }
+
+  .user-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 4px;
+    border-bottom: 0.5px solid rgba(45,61,52,.07);
+  }
+  .user-row:last-child { border-bottom: 0; }
+  .user-row .av {
+    width: 32px; height: 32px; border-radius: 50%;
+    color: #FFF; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex-shrink: 0;
+  }
+  .user-row .info { flex: 1; min-width: 0; }
+  .user-row .nm { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .user-row .uid {
+    font-family: ui-monospace, monospace;
+    font-size: 9px; color: var(--ink-mute);
+  }
+  .user-row .ops { display: flex; gap: 4px; }
+  .user-row .ops button {
+    background: rgba(45,61,52,.06);
+    border: 0; border-radius: 6px;
+    padding: 5px 9px; font-size: 10px;
+    cursor: pointer; font-family: inherit; font-weight: 500;
+    color: var(--ink);
+  }
+  .user-row .ops button.green { background: rgba(107,133,121,.18); color: var(--court-from); }
+  .user-row .ops button.red { background: rgba(183,62,62,.12); color: var(--red); }
+  .user-row .ops button:hover { filter: brightness(.95); }
+  .user-row .ops button:disabled { opacity: .35; cursor: not-allowed; }
+
+  .add-coach-cta {
+    display: block; width: 100%;
+    padding: 11px 14px;
+    background: var(--coach-from); color: #E8EFE5;
+    border: 0; border-radius: 8px;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    letter-spacing: .04em;
+    margin-top: 8px;
+  }
+  .add-coach-cta:hover { background: #1F2D26; }
+
+  .empty-state {
+    text-align: center; padding: 30px 16px;
+    color: var(--ink-mute); font-size: 12px;
+  }
+
+  .cb-toast {
+    position: fixed; left: 50%; bottom: 80px;
+    transform: translateX(-50%);
+    background: var(--ink); color: var(--bg);
+    padding: 10px 16px; border-radius: 999px;
+    font-size: 12px; font-weight: 500;
+    box-shadow: 0 4px 12px rgba(45,61,52,.25);
+    z-index: 200;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    letter-spacing: .04em;
+    max-width: 90vw; text-align: center;
+  }
+  .cb-toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+  .cb-toast.warn { background: var(--red); }
+
+  /* RESPONSIVE */
+  @media (min-width: 720px) {
+    .cb { max-width: 1080px; padding-bottom: 130px; }
+    .cb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .cb-time { padding: 14px 12px 16px; }
+    .cb-stage { height: 220px; }
+    .cb-cta .wrap { max-width: 1080px; display: flex; justify-content: flex-end; }
+    .cb-cta button { width: 220px; }
+  }
+  @media (min-width: 1024px) {
+    .cb { padding: 32px 24px 130px; }
+    .cb-stage { height: 260px; }
+    .cb-info .ltr { font-size: 32px; }
+    .cb-mark { font-size: 140px; }
+    .cb-title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  <span class="tag">DEMO</span>
+  <span>登入身份：</span>
+  <select id="demo-user-select"></select>
+  <button id="demo-newuser">+ 模擬首次登入</button>
+  <button id="demo-logout">登出</button>
+  <span class="who" id="demo-who"></span>
+</div>
+
+<div class="screen" id="screen-login">
+  <div class="login-wrap">
+    <div class="login-logo">CB</div>
+    <h1>Court Board</h1>
+    <p class="lead">使用 LINE 帳號登入<br>開始預約您的網球場時段</p>
+    <button class="line-btn" id="line-login">
+      <span class="ico">L</span>使用 LINE 登入
+    </button>
+    <p class="legal">登入即表示您同意服務條款與隱私權政策</p>
+  </div>
+</div>
+
+<div class="screen" id="screen-pending">
+  <div class="status-screen">
+    <div class="status-icon pending">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+    </div>
+    <h2>會員審核中</h2>
+    <p>您的會員資格尚待管理員審核，通過後才能使用掛牌功能。</p>
+    <p class="en">Your membership is pending approval.<br>Please wait for an administrator to approve your account.</p>
+
+    <div class="meta-card">
+      <div class="meta-row"><span class="k">LINE userId</span><span class="v" id="pending-uid">—</span></div>
+      <div class="meta-row"><span class="k">顯示名稱</span><span class="v" id="pending-name">—</span></div>
+      <div class="meta-row"><span class="k">申請時間</span><span class="v" id="pending-time">—</span></div>
+      <div class="meta-row"><span class="k">狀態</span><span class="v"><span class="badge pending">PENDING</span></span></div>
+    </div>
+
+    <p class="small-action">如有疑問，請聯繫管理員</p>
+  </div>
+</div>
+
+<div class="screen" id="screen-blocked">
+  <div class="status-screen">
+    <div class="status-icon blocked">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+      </svg>
+    </div>
+    <h2>帳號已被封鎖</h2>
+    <p>您的帳號已被管理員封鎖，目前無法使用本系統。<br>如有疑問，請聯繫管理員協助處理。</p>
+    <p class="en">Your account has been blocked.<br>Please contact an administrator for assistance.</p>
+
+    <div class="meta-card">
+      <div class="meta-row"><span class="k">LINE userId</span><span class="v" id="blocked-uid">—</span></div>
+      <div class="meta-row"><span class="k">狀態</span><span class="v"><span class="badge blocked">BLOCKED</span></span></div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-app">
+  <div class="cb">
+
+    <div class="cb-top">
+      <div class="cb-brand"><span>COURT BOARD</span><span class="d"></span></div>
+      <div class="cb-actions">
+        <button class="cb-admin-btn" id="admin-open" style="display:none;">
+          管理 <span class="pcount" id="admin-pcount">0</span>
+        </button>
+        <button class="cb-me" id="me-btn">
+          <span class="av" id="me-av"></span>
+          <span class="nm" id="me-nm"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="cb-title">今日場次總覽</div>
+    <div class="cb-sub" id="cb-sub">點任一時段切換球場狀態</div>
+
+    <div class="cb-time" id="cb-time">
+      <span>06</span><span>08</span><span>10</span><span>12</span><span>14</span><span>16</span><span>18</span>
+      <div class="cb-now" id="cb-marker"></div>
+    </div>
+
+    <div class="cb-grid">
+
+      <div class="cb-card">
+        <div class="cb-info">
+          <div class="lab">COURT</div>
+          <div class="ltr">A</div>
+          <div class="typ">室外硬地</div>
+        </div>
+        <div class="cb-stage">
+          <div class="cb-mark">A</div>
+          <div class="cb-court" data-court="A">
+            <span class="cb-line t"></span><span class="cb-line b"></span>
+            <span class="cb-line lf"></span><span class="cb-line rf"></span>
+            <span class="cb-line svll"></span><span class="cb-line svlr"></span>
+            <span class="cb-net"></span>
+            <div class="cb-half top" id="A-top"></div>
+            <div class="cb-half bottom" id="A-bottom"></div>
+          </div>
+        </div>
+        <div class="cb-slots" id="slots-A"></div>
+      </div>
+
+      <div class="cb-card">
+        <div class="cb-info">
+          <div class="lab">COURT</div>
+          <div class="ltr">B</div>
+          <div class="typ">室外硬地</div>
+        </div>
+        <div class="cb-stage">
+          <div class="cb-mark">B</div>
+          <div class="cb-court" data-court="B">
+            <span class="cb-line t"></span><span class="cb-line b"></span>
+            <span class="cb-line lf"></span><span class="cb-line rf"></span>
+            <span class="cb-line svll"></span><span class="cb-line svlr"></span>
+            <span class="cb-net"></span>
+            <div class="cb-half top" id="B-top"></div>
+            <div class="cb-half bottom" id="B-bottom"></div>
+          </div>
+        </div>
+        <div class="cb-slots" id="slots-B"></div>
+      </div>
+
+    </div>
+
+    <div class="cb-legend">
+      <span><i></i>可預約</span>
+      <span><i class="f"></i>已預約</span>
+      <span><i class="c"></i>教練課</span>
+      <span><i class="m"></i>我的預約</span>
+      <span><i class="r"></i>可被替補</span>
+      <span><i class="e"></i>已結束</span>
+    </div>
+
+  </div>
+
+  <div class="cb-cta">
+    <div class="wrap"><button id="quick"><span class="plus">+</span>快速預約</button></div>
+  </div>
+</div>
+
+<div class="cb-overlay" id="overlay">
+  <div class="cb-sheet" id="sheet"></div>
+</div>
+
+<div class="cb-toast" id="toast"></div>
+
+<script>
+(function(){
+
+  /* ============================================================
+     LIFF CONFIG
+     - LIFF_ID is the production LINE LIFF App ID.
+     - LIFF requires HTTPS; we silently fall back to demo mode on
+       file:// or localhost so local previews still work.
+     - When deployed to Vercel (HTTPS), LIFF mode activates.
+  ============================================================ */
+  const LIFF_ID = "2009941241-ymtu2MdM";
+  const PLACEHOLDER_LIFF_ID = "YOUR_LIFF_ID_HERE";
+  const isHttps     = location.protocol === 'https:';
+  const isLocalhost = /^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/.test(location.hostname);
+  const isLiffEnabled = !!(
+    window.liff &&
+    LIFF_ID &&
+    LIFF_ID !== PLACEHOLDER_LIFF_ID &&
+    isHttps &&
+    !isLocalhost
+  );
+
+  /* ============================================================
+     CONSTANTS
+  ============================================================ */
+  const MAX_ADMINS = 5;
+  const MAX_STUDENTS = 4;
+  const STATUS = {
+    PENDING: 'pending',
+    MEMBER:  'member',
+    COACH:   'coach',
+    ADMIN:   'admin',
+    BLOCKED: 'blocked'
+  };
+
+  /* Strength tag dictionary — Chinese label ↔ English meaning */
+  const STRENGTH_INFO = {
+    '右邊': 'Forehand side',
+    '左邊': 'Backhand side',
+    '前面': 'Volley / Net play',
+    '後面': 'Baseline / Movement'
+  };
+  const STRENGTH_KEYS = Object.keys(STRENGTH_INFO);
+
+  /* ============================================================
+     USER STORE — keyed by LINE userId
+     ntrp / playCount / strengths replace the old win-rate model.
+  ============================================================ */
+  const USERS = {
+    'U0000000001': { userId:'U0000000001', displayName:'Jacky',     ic:'我', cl:'#4A6B8A', status:STATUS.ADMIN,   createdAt:'2026-01-01', ntrp:'4.0', playCount:38, strengths:['右邊','後面'] },
+    'U0000000002': { userId:'U0000000002', displayName:'Sara Lin',  ic:'S', cl:'#7C9788', status:STATUS.ADMIN,   createdAt:'2026-01-02', ntrp:'3.5', playCount:25, strengths:['左邊','前面'] },
+    'U0000000003': { userId:'U0000000003', displayName:'小凱',       ic:'小', cl:'#C8987A', status:STATUS.MEMBER,  createdAt:'2026-01-05', ntrp:'3.0', playCount:12, strengths:['右邊','前面'] },
+    'U0000000004': { userId:'U0000000004', displayName:'宇軒',       ic:'宇', cl:'#A87A5C', status:STATUS.MEMBER,  createdAt:'2026-01-06', ntrp:'3.5', playCount:18, strengths:['左邊','後面'] },
+    'U0000000005': { userId:'U0000000005', displayName:'阿強',       ic:'阿', cl:'#7C9788', status:STATUS.MEMBER,  createdAt:'2026-01-08', ntrp:'4.0', playCount:31, strengths:['右邊','後面'] },
+    'U0000000006': { userId:'U0000000006', displayName:'Leo',       ic:'L', cl:'#8A6B4E', status:STATUS.MEMBER,  createdAt:'2026-01-09', ntrp:'3.0', playCount:9,  strengths:['左邊','前面'] },
+    'U0000000007': { userId:'U0000000007', displayName:'大衛',       ic:'大', cl:'#9D7A56', status:STATUS.MEMBER,  createdAt:'2026-01-12', ntrp:'3.5', playCount:22, strengths:['前面','後面'] },
+    'U0000000008': { userId:'U0000000008', displayName:'Ken',       ic:'K', cl:'#7A8C7C', status:STATUS.MEMBER,  createdAt:'2026-01-12', ntrp:'3.0', playCount:14, strengths:['右邊','前面'] },
+    'U0000000009': { userId:'U0000000009', displayName:'阿明',       ic:'明', cl:'#B89274', status:STATUS.MEMBER,  createdAt:'2026-02-01', ntrp:'2.5', playCount:6,  strengths:['左邊'] },
+    'U0000000010': { userId:'U0000000010', displayName:'Jin',       ic:'J', cl:'#80937F', status:STATUS.MEMBER,  createdAt:'2026-02-03', ntrp:'3.0', playCount:11, strengths:['後面'] },
+    'U0000000011': { userId:'U0000000011', displayName:'Coach Mike',ic:'M', cl:'#2A4036', status:STATUS.COACH,   createdAt:'2026-01-03', ntrp:'5.0', playCount:120, strengths:['右邊','左邊','前面','後面'] },
+    'U0000000012': { userId:'U0000000012', displayName:'Coach Tina',ic:'T', cl:'#2A4036', status:STATUS.COACH,   createdAt:'2026-01-04', ntrp:'5.0', playCount:96,  strengths:['前面','後面'] },
+    'U0000000013': { userId:'U0000000013', displayName:'新人 Nora',  ic:'N', cl:'#A8A89C', status:STATUS.PENDING, createdAt:'2026-04-25', ntrp:'—',   playCount:0,  strengths:[] },
+    'U0000000014': { userId:'U0000000014', displayName:'新人 Owen',  ic:'O', cl:'#9C8A78', status:STATUS.PENDING, createdAt:'2026-04-26', ntrp:'—',   playCount:0,  strengths:[] },
+    'U0000000015': { userId:'U0000000015', displayName:'被封鎖者',    ic:'X', cl:'#888888', status:STATUS.BLOCKED, createdAt:'2026-03-10', ntrp:'2.5', playCount:3,  strengths:[] }
+  };
+
+  let currentUserId = 'U0000000001';
+
+  /* ============================================================
+     HELPERS — status checks, role math
+  ============================================================ */
+  function getUser(id) { return USERS[id]; }
+  function me() { return getUser(currentUserId); }
+  function isAdmin() { return me() && me().status === STATUS.ADMIN; }
+  function isCoach(uid) { const u = getUser(uid); return u && u.status === STATUS.COACH; }
+  function canBook() {
+    const u = me();
+    return u && (u.status === STATUS.MEMBER || u.status === STATUS.COACH || u.status === STATUS.ADMIN);
+  }
+  /* Status-specific reject message — used by booking actions */
+  function bookingRejectMessage(){
+    const u = me();
+    if (!u) return '請先登入';
+    if (u.status === STATUS.PENDING) return '您的會員資格尚待管理員審核，通過後才能使用掛牌功能。';
+    if (u.status === STATUS.BLOCKED) return '帳號已被封鎖，無法使用此功能';
+    return '需要會員權限';
+  }
+  function adminCount() {
+    return Object.values(USERS).filter(u => u.status === STATUS.ADMIN).length;
+  }
+  function pendingList() {
+    return Object.values(USERS).filter(u => u.status === STATUS.PENDING);
+  }
+  function nonPendingList() {
+    return Object.values(USERS).filter(u => u.status !== STATUS.PENDING);
+  }
+  function coachList() {
+    return Object.values(USERS).filter(u => u.status === STATUS.COACH);
+  }
+  function memberLikeList() {
+    return Object.values(USERS).filter(u =>
+      u.status === STATUS.MEMBER || u.status === STATUS.COACH || u.status === STATUS.ADMIN
+    );
+  }
+
+  /* ============================================================
+     COURT DATA — halves are now { top, bottom } (horizontal split)
+     half = { k: 'open'|'full'|'mine'|'coach'|'coach-tail',
+              p: [uid...], replaceable?: [uid subset of p],
+              coach?: uid, dur?: 60, span?: '10:00 — 11:00' }
+  ============================================================ */
+  const TIMES = [];
+  for (let h = 6; h <= 18; h++){
+    TIMES.push(String(h).padStart(2,'0')+':00');
+    if (h !== 18) TIMES.push(String(h).padStart(2,'0')+':30');
+  }
+  const NOW_TIME = '10:00';
+  let activeIdx = TIMES.indexOf(NOW_TIME);
+
+  const courts = {
+    A: {
+      '08:00': { top:{k:'open',p:[]},
+                 bottom:{k:'open',p:['U0000000003']} },
+      '09:00': { top:{k:'full',p:['U0000000003','U0000000004']},
+                 bottom:{k:'full',p:['U0000000005','U0000000006']} },
+      '09:30': { top:{k:'open',p:['U0000000003']},
+                 bottom:{k:'open',p:['U0000000005','U0000000006']} },
+      '10:00': { top:{k:'coach',coach:'U0000000011',p:['U0000000003','U0000000004','U0000000008'],dur:60,span:'10:00 — 11:00'},
+                 bottom:{k:'full',p:['U0000000005','U0000000006']} },
+      '10:30': { top:{k:'coach-tail',coach:'U0000000011',p:['U0000000003','U0000000004','U0000000008'],span:'10:00 — 11:00'},
+                 bottom:{k:'open',p:[]} },
+      '11:00': { top:{k:'open',p:[]},
+                 bottom:{k:'open',p:['U0000000005']} },
+      '11:30': { top:{k:'open',p:['U0000000006']},
+                 bottom:{k:'full',p:['U0000000007','U0000000008']} },
+      '12:00': { top:{k:'mine',p:['U0000000001','U0000000003']},
+                 bottom:{k:'open',p:[]} },
+      '12:30': { top:{k:'mine',p:['U0000000001','U0000000003'], replaceable:['U0000000001','U0000000003']},
+                 bottom:{k:'open',p:[]} },
+      '13:00': { top:{k:'open',p:['U0000000003']},
+                 bottom:{k:'open',p:[]} }
+    },
+    B: {
+      '08:00': { top:{k:'full',p:['U0000000009','U0000000010']},
+                 bottom:{k:'open',p:['U0000000006','U0000000007']} },
+      '09:00': { top:{k:'full',p:['U0000000009','U0000000010']},
+                 bottom:{k:'full',p:['U0000000005','U0000000007']} },
+      '09:30': { top:{k:'open',p:['U0000000009']},
+                 bottom:{k:'open',p:[]} },
+      '10:00': { top:{k:'full',p:['U0000000009','U0000000010']},
+                 bottom:{k:'full',p:['U0000000006','U0000000008']} },
+      '10:30': { top:{k:'open',p:['U0000000009','U0000000010']},
+                 bottom:{k:'open',p:['U0000000006']} },
+      '11:00': { top:{k:'open',p:['U0000000005','U0000000007']},
+                 bottom:{k:'coach',coach:'U0000000012',p:['U0000000003','U0000000004'],dur:60,span:'11:00 — 12:00'} },
+      '11:30': { top:{k:'open',p:['U0000000005','U0000000007','U0000000008']},
+                 bottom:{k:'coach-tail',coach:'U0000000012',p:['U0000000003','U0000000004'],span:'11:00 — 12:00'} },
+      '12:00': { top:{k:'open',p:[]},
+                 bottom:{k:'full',p:['U0000000006','U0000000007']} },
+      '12:30': { top:{k:'open',p:['U0000000010']},
+                 bottom:{k:'open',p:[]} }
+    }
+  };
+  ['A','B'].forEach(c => {
+    TIMES.forEach(t => {
+      if (!courts[c][t]) courts[c][t] = { top:{k:'open',p:[]}, bottom:{k:'open',p:[]} };
+    });
+  });
+
+  /* ============================================================
+     DOM REFERENCES
+  ============================================================ */
+  const screens = {
+    login:   document.getElementById('screen-login'),
+    pending: document.getElementById('screen-pending'),
+    blocked: document.getElementById('screen-blocked'),
+    app:     document.getElementById('screen-app')
+  };
+  const overlay = document.getElementById('overlay');
+  const sheet   = document.getElementById('sheet');
+  const toast   = document.getElementById('toast');
+  const subEl   = document.getElementById('cb-sub');
+  const marker  = document.getElementById('cb-marker');
+  const adminBtn = document.getElementById('admin-open');
+  const adminPCount = document.getElementById('admin-pcount');
+  const meBtn = document.getElementById('me-btn');
+  const meAv = document.getElementById('me-av');
+  const meNm = document.getElementById('me-nm');
+
+  /* Two seats inside a horizontal strip — left and right */
+  const seats = [
+    { x: 28, y: 50 },
+    { x: 72, y: 50 }
+  ];
+
+  function showToast(msg, warn){
+    toast.textContent = msg;
+    toast.classList.toggle('warn', !!warn);
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  function showScreen(name){
+    Object.keys(screens).forEach(k => screens[k].classList.toggle('active', k === name));
+  }
+
+  /* ============================================================
+     ROUTER
+  ============================================================ */
+  function route(){
+    if (!currentUserId){ showScreen('login'); return; }
+    const u = me();
+    if (!u){ showScreen('login'); currentUserId = null; return; }
+
+    if (u.status === STATUS.PENDING){
+      document.getElementById('pending-uid').textContent = u.userId;
+      document.getElementById('pending-name').textContent = u.displayName;
+      document.getElementById('pending-time').textContent = u.createdAt || '—';
+      showScreen('pending');
+      return;
+    }
+    if (u.status === STATUS.BLOCKED){
+      document.getElementById('blocked-uid').textContent = u.userId;
+      showScreen('blocked');
+      return;
+    }
+    showScreen('app');
+    renderApp();
+  }
+
+  /* ============================================================
+     BOOKING-RULE HELPERS
+  ============================================================ */
+  function userHasBookingAt(uid, court, time){
+    const slot = courts[court] && courts[court][time];
+    if (!slot) return false;
+    return ['top','bottom'].some(h => {
+      const s = slot[h];
+      if (!s) return false;
+      if (s.k === 'coach' || s.k === 'coach-tail') return false; /* coach booking handled separately */
+      return (s.p || []).indexOf(uid) >= 0;
+    });
+  }
+
+  function adjacentBookingCount(uid, court, time){
+    const prev = addMin(time, -30);
+    const next = addMin(time,  30);
+    let n = 0;
+    if (userHasBookingAt(uid, court, prev)) n++;
+    if (userHasBookingAt(uid, court, next)) n++;
+    return n;
+  }
+
+  /* A member's booking is "replaceable" if it's the second of a consecutive pair.
+     We compute on-the-fly from the half's `replaceable` array. */
+  function isReplaceableEntry(half, uid){
+    return half && half.replaceable && half.replaceable.indexOf(uid) >= 0;
+  }
+
+  function halfHasReplaceable(half){
+    return half && half.replaceable && half.replaceable.length > 0;
+  }
+
+  /* ============================================================
+     RENDER
+  ============================================================ */
+  /* Avatar helper: returns optional <img> overlay that auto-removes on error.
+     The colored circle + initial char beneath remains as fallback. */
+  function avPicHTML(u){
+    if (u && u.pictureUrl){
+      return '<img src="' + u.pictureUrl + '" alt="" onerror="this.remove()">';
+    }
+    return '';
+  }
+
+  function renderApp(){
+    const u = me();
+    meAv.style.background = u.cl;
+    meAv.innerHTML = u.ic + avPicHTML(u);
+    meNm.textContent = u.displayName;
+
+    if (u.status === STATUS.ADMIN){
+      adminBtn.style.display = 'inline-flex';
+      adminPCount.textContent = pendingList().length;
+    } else {
+      adminBtn.style.display = 'none';
+    }
+
+    ['A','B'].forEach(c => {
+      const slot = courts[c][TIMES[activeIdx]];
+      renderHalf(document.getElementById(c+'-top'),    slot.top,    { court:c, side:'top',    time:TIMES[activeIdx] });
+      renderHalf(document.getElementById(c+'-bottom'), slot.bottom, { court:c, side:'bottom', time:TIMES[activeIdx] });
+      renderSlots(c);
+    });
+    const pct = (activeIdx / (TIMES.length - 1)) * 88 + 6;
+    marker.style.left = pct + '%';
+
+    const t = TIMES[activeIdx];
+    const role = u.status === STATUS.ADMIN ? '管理員' : u.status === STATUS.COACH ? '教練' : '會員';
+    subEl.textContent = `${t} — ${addMin(t,30)} · ${role}模式`;
+    overlay.classList.remove('show');
+  }
+
+  function isMineSlot(slot){
+    if (!slot) return false;
+    return ['top','bottom'].some(h => {
+      const s = slot[h];
+      return s && s.k !== 'coach' && s.k !== 'coach-tail' &&
+             (s.p || []).indexOf(currentUserId) >= 0;
+    });
+  }
+
+  function pillEl(uid, opt){
+    const u = getUser(uid) || { displayName:'?', ic:'?', cl:'#888' };
+    const el = document.createElement('button');
+    el.className = 'cb-pill';
+    if (uid === currentUserId) el.classList.add('is-mine');
+    if (opt && opt.replaceable) el.classList.add('replaceable');
+    const fullClass = opt && opt.full ? ' f' : '';
+    el.innerHTML =
+      `<span class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</span>` +
+      `<span class="nm">${u.displayName}</span>` +
+      (opt && opt.replaceable ? `<span class="repl">替補</span>` : '') +
+      `<span class="st${fullClass}"></span>`;
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      openProfile(uid, opt && opt.context);
+    });
+    return el;
+  }
+
+  function emptyEl(context){
+    const el = document.createElement('button');
+    el.className = 'cb-pill empty';
+    el.innerHTML = `<span class="av">+</span><span class="nm">空位</span>`;
+    el.addEventListener('click', e => { e.stopPropagation(); joinSeat(context); });
+    return el;
+  }
+
+  function renderHalf(el, data, context){
+    el.innerHTML = '';
+    el.classList.remove('full','mine');
+    if (!data) return;
+
+    /* horizontal-strip label: TOP=前場/網前, BOTTOM=後場/底線 */
+    const tag = document.createElement('span');
+    tag.className = 'cb-half-tag';
+    tag.textContent = context.side === 'top' ? '前場 · NET' : '後場 · BASELINE';
+    el.appendChild(tag);
+
+    const isCoachKind = data.k === 'coach' || data.k === 'coach-tail';
+    const mine = !isCoachKind && (data.p || []).indexOf(currentUserId) >= 0;
+
+    if (isCoachKind){
+      const c = document.createElement('button');
+      c.className = 'cb-coach';
+      const studs = (data.p || []).slice(0,4).map(uid => {
+        const pp = getUser(uid) || { ic:'?', cl:'#888' };
+        return `<span class="a" style="background:${pp.cl}">${pp.ic}</span>`;
+      }).join('');
+      const studentMine = (data.p || []).indexOf(currentUserId) >= 0;
+      const coachUser = getUser(data.coach);
+      c.innerHTML = `
+        ${studentMine ? '<span class="cb-mine-mark">我</span>' : ''}
+        <div>
+          <span class="b">${data.k === 'coach' ? 'Coaching · 1h' : 'Cont.'}</span>
+          <div class="who">${coachUser ? coachUser.displayName : 'Coach'}</div>
+          <div class="span">${data.span || ''}</div>
+        </div>
+        <div class="stu">${studs}<span class="ct">${(data.p||[]).length} / ${MAX_STUDENTS} students</span></div>`;
+      c.addEventListener('click', e => { e.stopPropagation(); openCoach(data, context); });
+      el.appendChild(c);
+      return;
+    }
+
+    if (data.k === 'full') el.classList.add('full');
+    if (mine) el.classList.add('mine');
+
+    const list = data.p || [];
+    for (let i=0; i<2; i++){
+      const seat = seats[i];
+      const w = document.createElement('div');
+      w.style.cssText = `position:absolute; left:${seat.x}%; top:${seat.y}%; transform:translate(-50%,-50%);`;
+      if (list[i]){
+        w.appendChild(pillEl(list[i], {
+          full: data.k==='full',
+          replaceable: isReplaceableEntry(data, list[i]),
+          context: context
+        }));
+      } else {
+        w.appendChild(emptyEl(context));
+      }
+      el.appendChild(w);
+    }
+  }
+
+  function statusText(slot){
+    if (!slot) return '—';
+    const tk = slot.top.k, bk = slot.bottom.k;
+    if (isMineSlot(slot)) return '我的預約';
+    if (tk === 'coach' || bk === 'coach') return '教練課';
+    if (tk === 'coach-tail' || bk === 'coach-tail') return '課程中';
+    if (tk === 'full' && bk === 'full') return '已預約';
+    if (tk === 'full' || bk === 'full') return '半滿';
+    return '可預約';
+  }
+
+  function renderSlots(courtKey){
+    const wrap = document.getElementById('slots-' + courtKey);
+    wrap.innerHTML = '';
+    TIMES.forEach((t, i) => {
+      const slot = courts[courtKey][t];
+      const el = document.createElement('button');
+      el.className = 'cb-slot';
+      const tk = slot.top.k, bk = slot.bottom.k;
+      const isCoach = (tk==='coach' || bk==='coach');
+      const isTail  = (tk==='coach-tail' || bk==='coach-tail');
+      const isFull  = (tk==='full' && bk==='full');
+      const isMine  = isMineSlot(slot);
+      const hasReplaceable = halfHasReplaceable(slot.top) || halfHasReplaceable(slot.bottom);
+      const past    = i < TIMES.indexOf(NOW_TIME);
+
+      if (isMine) el.classList.add('mine');
+      else if (past) el.classList.add('ended');
+      else if (isCoach) el.classList.add('coach');
+      else if (isTail) el.classList.add('coach','tail');
+      else if (isFull) el.classList.add('full');
+      if (hasReplaceable && !past) el.classList.add('repl');
+      if (i === activeIdx) el.classList.add('active');
+
+      const stat = past && !isMine ? '已結束'
+                 : (hasReplaceable && !isMine ? '可被替補'
+                 : statusText(slot));
+      el.innerHTML = `<div class="t">${t}</div><div class="s">${stat}</div>`;
+      el.addEventListener('click', () => { activeIdx = i; renderApp(); });
+      wrap.appendChild(el);
+    });
+    const active = wrap.querySelector('.active');
+    if (active) active.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+  }
+
+  function addMin(t, m){
+    const [h, mm] = t.split(':').map(Number);
+    const total = h*60 + mm + m;
+    if (total < 0) return null;
+    return String(Math.floor(total/60) % 24).padStart(2,'0') + ':' + String(total%60).padStart(2,'0');
+  }
+
+  /* ============================================================
+     ADMIN ACTIONS — permission checks live here
+  ============================================================ */
+  function approveUser(uid){
+    if (!isAdmin()) return showToast('需要管理員權限', true);
+    const u = getUser(uid);
+    if (!u || u.status !== STATUS.PENDING) return;
+    u.status = STATUS.MEMBER;
+    showToast(`已核准 ${u.displayName}`);
+    rerenderAdminPanel(); renderApp();
+  }
+
+  function rejectUser(uid){
+    if (!isAdmin()) return showToast('需要管理員權限', true);
+    const u = getUser(uid);
+    if (!u || u.status !== STATUS.PENDING) return;
+    delete USERS[uid];
+    showToast(`已拒絕 ${u.displayName} 的申請`);
+    rerenderAdminPanel(); renderApp();
+  }
+
+  function setStatus(uid, newStatus){
+    if (!isAdmin()) return showToast('需要管理員權限', true);
+    const u = getUser(uid);
+    if (!u) return;
+    if (newStatus === STATUS.ADMIN && u.status !== STATUS.ADMIN){
+      if (adminCount() >= MAX_ADMINS){
+        showToast(`已達管理員上限 (最多 ${MAX_ADMINS} 位)`, true); return false;
+      }
+    }
+    if (u.status === STATUS.ADMIN && newStatus !== STATUS.ADMIN){
+      if (adminCount() <= 1){
+        showToast('系統至少需保留 1 位管理員', true); return false;
+      }
+    }
+    u.status = newStatus;
+    showToast(`${u.displayName} 已設為 ${labelForStatus(newStatus)}`);
+    rerenderAdminPanel(); renderApp();
+    return true;
+  }
+
+  function blockUser(uid){
+    if (!isAdmin()) return showToast('需要管理員權限', true);
+    const u = getUser(uid); if (!u) return;
+    if (u.status === STATUS.ADMIN && adminCount() <= 1){
+      showToast('無法封鎖最後一位管理員', true); return;
+    }
+    u.status = STATUS.BLOCKED;
+    removeFromAllBookings(uid);
+    showToast(`${u.displayName} 已封鎖`);
+    rerenderAdminPanel(); renderApp();
+  }
+
+  function unblockUser(uid){
+    if (!isAdmin()) return showToast('需要管理員權限', true);
+    const u = getUser(uid); if (!u) return;
+    u.status = STATUS.MEMBER;
+    showToast(`${u.displayName} 已解除封鎖`);
+    rerenderAdminPanel(); renderApp();
+  }
+
+  function removeFromBooking(uid, ctx){
+    if (!isAdmin()) return showToast('需要管理員權限', true);
+    if (!ctx || !ctx.court) return;
+    const slot = courts[ctx.court][ctx.time];
+    const half = slot[ctx.side];
+    half.p = (half.p || []).filter(x => x !== uid);
+    half.replaceable = (half.replaceable || []).filter(x => x !== uid);
+    normalizeHalfState(half);
+    showToast('已從預約移除');
+    overlay.classList.remove('show');
+    renderApp();
+  }
+
+  function removeFromAllBookings(uid){
+    ['A','B'].forEach(c => {
+      Object.keys(courts[c]).forEach(t => {
+        const slot = courts[c][t]; if (!slot) return;
+        ['top','bottom'].forEach(k => {
+          const half = slot[k]; if (!half || !half.p) return;
+          if (half.k === 'coach' || half.k === 'coach-tail'){
+            half.p = half.p.filter(x => x !== uid); /* drop from student list */
+            return;
+          }
+          half.p = half.p.filter(x => x !== uid);
+          half.replaceable = (half.replaceable || []).filter(x => x !== uid);
+          normalizeHalfState(half);
+        });
+      });
+    });
+  }
+
+  function normalizeHalfState(half){
+    if (!half || half.k === 'coach' || half.k === 'coach-tail') return;
+    const n = (half.p || []).length;
+    const containsMe = (half.p || []).indexOf(currentUserId) >= 0;
+    if (n === 0){ half.k = 'open'; half.replaceable = []; return; }
+    if (n >= 2) half.k = containsMe ? 'mine' : 'full';
+    else half.k = containsMe ? 'mine' : 'open';
+    if (!half.replaceable) half.replaceable = [];
+    /* drop replaceable entries that no longer exist in p */
+    half.replaceable = half.replaceable.filter(x => half.p.indexOf(x) >= 0);
+  }
+
+  function labelForStatus(s){
+    return ({pending:'待審核', member:'會員', coach:'教練', admin:'管理員', blocked:'封鎖'})[s] || s;
+  }
+
+  /* ============================================================
+     PROFILE SHEET — NTRP / 出席次數 / 擅長位置
+  ============================================================ */
+  function strengthTagsHTML(strengths){
+    if (!strengths || !strengths.length){
+      return `<span class="empty">尚未設定</span>`;
+    }
+    return strengths.map(s => {
+      const en = STRENGTH_INFO[s] || '';
+      return `<span class="strength-tag">${s}<span class="en">${en}</span></span>`;
+    }).join('');
+  }
+
+  function roleBadgeHTML(u){
+    if (u.status === STATUS.COACH)  return '<span class="badge coach">COACH</span>';
+    if (u.status === STATUS.ADMIN)  return '<span class="badge admin">ADMIN</span>';
+    if (u.status === STATUS.BLOCKED)return '<span class="badge blocked">BLOCKED</span>';
+    if (u.status === STATUS.PENDING)return '<span class="badge pending">PENDING</span>';
+    return '';
+  }
+
+  function avatarBg(u, mine){
+    return `background:${mine ? 'var(--blue)' : u.cl}`;
+  }
+
+  function openProfile(uid, context){
+    const u = getUser(uid);
+    if (!u){
+      sheet.innerHTML = `<div class="grab"></div><div class="empty-state">使用者已不存在</div>`;
+      overlay.classList.add('show');
+      return;
+    }
+    const mine = uid === currentUserId;
+    sheet.classList.toggle('is-mine', mine);
+    sheet.classList.remove('is-admin-panel','is-coach-form');
+
+    const role = roleBadgeHTML(u);
+    const replaceableHere = context && courts[context.court] &&
+                            isReplaceableEntry(courts[context.court][context.time][context.side], uid);
+
+    let actBtn = '';
+    if (mine && context){
+      actBtn = `<button class="act mine">取消預約</button>`;
+    } else if (canBook() && !mine && context && replaceableHere){
+      actBtn = `<button class="act amber">替補進入</button>`;
+    } else if (canBook() && !mine && context){
+      actBtn = `<button class="act">加入</button>`;
+    }
+
+    /* Initial char + optional LINE picture overlay (auto-removes on 404) */
+    const avHTML = `<div class="a" style="${avatarBg(u, mine)}">${u.ic}${avPicHTML(u)}</div>`;
+
+    sheet.innerHTML = `
+      <div class="grab"></div>
+      <div class="row">
+        ${avHTML}
+        <div style="flex:1; min-width:0;">
+          <div class="n">${u.displayName} ${role}</div>
+          <div class="sb"><span class="uid">${u.userId}</span></div>
+        </div>
+        ${actBtn}
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="k">NTRP</div><div class="v">${u.ntrp || '—'}</div></div>
+        <div class="stat"><div class="k">出席次數</div><div class="v">${u.playCount != null ? u.playCount : 0}</div></div>
+      </div>
+      <div class="cb-strengths">
+        <div class="label">擅長位置 · Strengths</div>
+        <div class="tags">${strengthTagsHTML(u.strengths)}</div>
+      </div>
+      ${ replaceableHere ? `<div style="margin-top:12px; font-size:11px; color:var(--amber); background:var(--amber-pale); padding:8px 10px; border-radius:8px;">此預約為連續第二格，可被尚未預約的會員替補。</div>` : '' }
+      ${ adminActionsForUser(u, context) }
+    `;
+    overlay.classList.add('show');
+
+    const btn = sheet.querySelector('button.act');
+    if (btn) btn.addEventListener('click', () => {
+      if (mine && context){
+        cancelMyBooking(context);
+      } else if (replaceableHere){
+        replaceBooking(context, uid);
+      } else if (!mine && context){
+        joinSeatAt(context);
+      }
+    });
+    bindAdminButtons(u, context);
+  }
+
+  function adminActionsForUser(u, context){
+    if (!isAdmin()) return '';
+    if (u.userId === currentUserId) return '';
+    const isLastAdmin = u.status === STATUS.ADMIN && adminCount() <= 1;
+    const adminFull = adminCount() >= MAX_ADMINS && u.status !== STATUS.ADMIN;
+    const hint = isLastAdmin ? '<span class="hint">這是最後一位管理員，無法降級或封鎖</span>' :
+                 adminFull ? `<span class="hint">已達管理員上限 (${MAX_ADMINS})</span>` : '';
+    return `
+      <div class="admin-panel">
+        <div class="label">管理員操作 <span class="count">ADMIN ${adminCount()}/${MAX_ADMINS}</span></div>
+        ${ context ? `
+          <div class="admin-row">
+            <button class="danger" data-act="remove">從此預約移除</button>
+          </div>` : '' }
+        <div class="admin-row">
+          ${ u.status === STATUS.BLOCKED
+              ? `<button class="success" data-act="unblock">解除封鎖</button>`
+              : `<button class="danger" data-act="block" ${isLastAdmin?'disabled':''}>封鎖此用戶</button>` }
+        </div>
+        <div class="admin-row">
+          <button data-act="role-member" ${u.status===STATUS.MEMBER||isLastAdmin?'disabled':''}>設為會員</button>
+          <button data-act="role-coach" ${u.status===STATUS.COACH||isLastAdmin?'disabled':''}>設為教練</button>
+          <button class="blue" data-act="role-admin" ${u.status===STATUS.ADMIN||adminFull?'disabled':''}>設為管理員</button>
+          ${hint}
+        </div>
+      </div>
+    `;
+  }
+
+  function bindAdminButtons(u, context){
+    sheet.querySelectorAll('.admin-row button').forEach(btn => {
+      const act = btn.getAttribute('data-act');
+      if (!act) return;
+      btn.addEventListener('click', () => {
+        if (act === 'remove')  return removeFromBooking(u.userId, context);
+        if (act === 'block')   return blockUser(u.userId);
+        if (act === 'unblock') return unblockUser(u.userId);
+        if (act === 'role-member') return setStatus(u.userId, STATUS.MEMBER);
+        if (act === 'role-coach')  return setStatus(u.userId, STATUS.COACH);
+        if (act === 'role-admin')  return setStatus(u.userId, STATUS.ADMIN);
+        if (act === 'cancel-coach' && context){
+          cancelCoachSession(context);
+        }
+        if (act === 'add-student' && context){
+          openStudentPicker(context);
+        }
+        if (act === 'remove-student'){
+          const sid = btn.getAttribute('data-sid');
+          removeStudentFromCoach(context, sid);
+        }
+      });
+    });
+  }
+
+  /* ============================================================
+     COACH SESSION — view + admin-only management
+  ============================================================ */
+  function openCoach(data, context){
+    sheet.classList.remove('is-mine','is-admin-panel','is-coach-form');
+    const studs = (data.p || []).map(uid => {
+      const pp = getUser(uid) || { displayName:'?', ic:'?', cl:'#888' };
+      const removeBtn = isAdmin()
+        ? `<button class="x" data-act="remove-student" data-sid="${uid}">×</button>`
+        : '';
+      return `<span class="chip"><span class="ca" style="background:${pp.cl}">${pp.ic}</span>${pp.displayName}${removeBtn}</span>`;
+    }).join('');
+    const coachUser = getUser(data.coach) || { displayName:'Coach', ic:'C' };
+    const halfLabel = context.side === 'top' ? '前場 / 網前 (Net side)' : '後場 / 底線 (Baseline)';
+    const isFull = (data.p || []).length >= MAX_STUDENTS;
+
+    sheet.innerHTML = `
+      <div class="grab"></div>
+      <div class="row">
+        <div class="a" style="background:#2A4036">${coachUser.ic}${avPicHTML(coachUser)}</div>
+        <div style="flex:1; min-width:0;">
+          <div class="n">${coachUser.displayName} <span class="badge coach">COACH</span></div>
+          <div class="sb">${halfLabel} · ${data.span || '60 分鐘'}</div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="k">時段</div><div class="v small">${data.span || '—'}</div></div>
+        <div class="stat"><div class="k">學員</div><div class="v">${(data.p||[]).length} / ${MAX_STUDENTS}</div></div>
+      </div>
+      <div style="margin-top:14px; font-size:10px; color:var(--ink-soft); letter-spacing:.08em; text-transform:uppercase;">學員名單</div>
+      <div class="stulist">${studs || '<span style="font-size:11px;color:#9CA89F;">尚無學員</span>'}</div>
+      <div style="margin-top:12px; font-size:11px; color:var(--ink-soft); line-height:1.6;">
+        教練課佔用此球場的<strong>${context.side === 'top' ? '前半場' : '後半場'}</strong>，另一半可由一般會員照常打球。
+      </div>
+      ${ isAdmin() ? `
+        <div class="admin-panel">
+          <div class="label">管理員操作</div>
+          <div class="admin-row">
+            <button class="success" data-act="add-student" ${isFull?'disabled':''}>${isFull?'學員已滿 (4/4)':'＋ 新增學員'}</button>
+          </div>
+          <div class="admin-row">
+            <button class="danger" data-act="cancel-coach">取消此教練課</button>
+          </div>
+        </div>` : '' }
+    `;
+    overlay.classList.add('show');
+    bindAdminButtons({ userId: data.coach }, context);
+  }
+
+  function cancelCoachSession(context){
+    if (!isAdmin()) return showToast('需要管理員權限', true);
+    const head = courts[context.court][context.time];
+    head[context.side] = { k:'open', p:[] };
+    const tailTime = addMin(context.time, 30);
+    const tail = courts[context.court][tailTime];
+    if (tail && tail[context.side] && tail[context.side].k === 'coach-tail'){
+      tail[context.side] = { k:'open', p:[] };
+    }
+    showToast('教練課已取消');
+    overlay.classList.remove('show');
+    renderApp();
+  }
+
+  function removeStudentFromCoach(context, sid){
+    if (!isAdmin()) return showToast('需要管理員權限', true);
+    const head = courts[context.court][context.time];
+    const sideHead = head[context.side];
+    if (sideHead.k !== 'coach' && sideHead.k !== 'coach-tail') return;
+    /* Find the head time even if user clicked the tail */
+    let headTime = context.time;
+    if (sideHead.k === 'coach-tail') headTime = addMin(context.time, -30);
+    const headSlot = courts[context.court][headTime];
+    const tailSlot = courts[context.court][addMin(headTime, 30)];
+    [headSlot, tailSlot].forEach(s => {
+      if (!s) return;
+      const h = s[context.side];
+      if (h && (h.k === 'coach' || h.k === 'coach-tail')){
+        h.p = (h.p || []).filter(x => x !== sid);
+      }
+    });
+    showToast('已移除學員');
+    /* Re-open the coach sheet with updated data */
+    openCoach(headSlot[context.side], { ...context, time: headTime });
+  }
+
+  /* ----- Student picker (admin add to existing session) ----- */
+  function openStudentPicker(context){
+    if (!isAdmin()) return;
+    let headTime = context.time;
+    const cur = courts[context.court][context.time][context.side];
+    if (cur.k === 'coach-tail') headTime = addMin(context.time, -30);
+    const head = courts[context.court][headTime][context.side];
+    const taken = head.p || [];
+    const remaining = MAX_STUDENTS - taken.length;
+    const candidates = memberLikeList()
+      .filter(u => taken.indexOf(u.userId) < 0 && u.status !== STATUS.BLOCKED && u.userId !== head.coach);
+
+    sheet.classList.remove('is-mine','is-admin-panel');
+    sheet.classList.add('is-coach-form');
+    let picked = [];
+
+    function refresh(){
+      sheet.innerHTML = `
+        <div class="grab"></div>
+        <div style="font-size:14px; font-weight:600; margin-bottom:4px;">新增學員</div>
+        <div style="font-size:11px; color:var(--ink-soft); margin-bottom:12px;">
+          ${head.span || ''} · 還可加入 ${remaining - picked.length} 位 (上限 ${MAX_STUDENTS} 人)
+        </div>
+        <div class="student-grid">
+          ${candidates.map(u => `
+            <div class="sopt ${picked.indexOf(u.userId)>=0?'on':''}" data-uid="${u.userId}">
+              <span class="ca" style="background:${u.cl}">${u.ic}</span>${u.displayName}
+            </div>
+          `).join('')}
+        </div>
+        <div class="form-actions">
+          <button class="secondary" data-act="cancel">取消</button>
+          <button class="primary" data-act="confirm" ${picked.length===0?'disabled':''}>加入 ${picked.length} 位</button>
+        </div>
+      `;
+      sheet.querySelectorAll('.sopt').forEach(b => {
+        b.addEventListener('click', () => {
+          const id = b.getAttribute('data-uid');
+          const at = picked.indexOf(id);
+          if (at >= 0) picked.splice(at, 1);
+          else if (picked.length < remaining) picked.push(id);
+          else showToast(`不能超過 ${remaining} 位`, true);
+          refresh();
+        });
+      });
+      sheet.querySelector('[data-act="cancel"]').addEventListener('click', () => {
+        openCoach(head, { ...context, time: headTime });
+      });
+      sheet.querySelector('[data-act="confirm"]').addEventListener('click', () => {
+        if (!picked.length) return;
+        const tailSlot = courts[context.court][addMin(headTime, 30)];
+        head.p = head.p.concat(picked);
+        if (tailSlot && tailSlot[context.side] && tailSlot[context.side].k === 'coach-tail'){
+          tailSlot[context.side].p = tailSlot[context.side].p.concat(picked);
+        }
+        showToast(`已加入 ${picked.length} 位學員`);
+        openCoach(head, { ...context, time: headTime });
+      });
+    }
+    refresh();
+  }
+
+  /* ----- Add coach session (admin form) ----- */
+  function openAddCoachSession(){
+    if (!isAdmin()) return;
+    sheet.classList.remove('is-mine','is-admin-panel');
+    sheet.classList.add('is-coach-form');
+
+    const coaches = coachList();
+    const state = {
+      court: 'A',
+      time: TIMES[activeIdx],
+      side: 'top',
+      coachId: coaches[0] ? coaches[0].userId : '',
+      students: []
+    };
+    /* Time options that have BOTH t and t+30 free of coach */
+    function timeOptions(){
+      return TIMES.filter(t => {
+        const next = addMin(t, 30);
+        if (!next || !courts[state.court][next]) return false;
+        const a = courts[state.court][t][state.side];
+        const b = courts[state.court][next][state.side];
+        if (!a || !b) return false;
+        return a.k !== 'coach' && a.k !== 'coach-tail' && b.k !== 'coach' && b.k !== 'coach-tail';
+      });
+    }
+
+    function refresh(){
+      const opts = timeOptions();
+      if (opts.indexOf(state.time) < 0) state.time = opts[0] || '';
+      const eligibleStudents = memberLikeList()
+        .filter(u => u.userId !== state.coachId && u.status !== STATUS.BLOCKED);
+
+      sheet.innerHTML = `
+        <div class="grab"></div>
+        <div style="font-size:15px; font-weight:600; margin-bottom:2px;">新增教練課</div>
+        <div style="font-size:11px; color:var(--ink-soft); margin-bottom:14px;">
+          僅限管理員 · 1 小時 · 最多 ${MAX_STUDENTS} 位學員
+        </div>
+
+        <div class="form-row">
+          <label>球場</label>
+          <div class="seg">
+            <button data-court="A" class="${state.court==='A'?'active':''}">球場 A</button>
+            <button data-court="B" class="${state.court==='B'?'active':''}">球場 B</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>半場 (Half)</label>
+          <div class="seg">
+            <button data-side="top" class="${state.side==='top'?'active':''}">前場 / 網前</button>
+            <button data-side="bottom" class="${state.side==='bottom'?'active':''}">後場 / 底線</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>教練</label>
+          <select id="cf-coach">
+            ${coaches.map(c => `<option value="${c.userId}" ${state.coachId===c.userId?'selected':''}>${c.displayName}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label>開始時間</label>
+          <select id="cf-time">
+            ${opts.length === 0
+              ? `<option value="">此半場無可用時段</option>`
+              : opts.map(t => `<option value="${t}" ${state.time===t?'selected':''}>${t} — ${addMin(t,30)} (1h)</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label>學員 (${state.students.length} / ${MAX_STUDENTS})</label>
+          <div class="student-grid">
+            ${eligibleStudents.map(u => `
+              <div class="sopt ${state.students.indexOf(u.userId)>=0?'on':''}" data-sid="${u.userId}">
+                <span class="ca" style="background:${u.cl}">${u.ic}</span>${u.displayName}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="secondary" data-act="cancel">取消</button>
+          <button class="primary" data-act="save" ${!state.time || !state.coachId ? 'disabled':''}>建立教練課</button>
+        </div>
+      `;
+
+      sheet.querySelectorAll('[data-court]').forEach(b => b.addEventListener('click', () => {
+        state.court = b.getAttribute('data-court'); refresh();
+      }));
+      sheet.querySelectorAll('[data-side]').forEach(b => b.addEventListener('click', () => {
+        state.side = b.getAttribute('data-side'); refresh();
+      }));
+      sheet.querySelector('#cf-coach').addEventListener('change', e => {
+        state.coachId = e.target.value;
+        state.students = state.students.filter(s => s !== state.coachId);
+        refresh();
+      });
+      const cft = sheet.querySelector('#cf-time');
+      if (cft) cft.addEventListener('change', e => { state.time = e.target.value; refresh(); });
+      sheet.querySelectorAll('.sopt').forEach(b => {
+        b.addEventListener('click', () => {
+          const id = b.getAttribute('data-sid');
+          const at = state.students.indexOf(id);
+          if (at >= 0) state.students.splice(at, 1);
+          else if (state.students.length < MAX_STUDENTS) state.students.push(id);
+          else showToast(`學員上限 ${MAX_STUDENTS} 位`, true);
+          refresh();
+        });
+      });
+      sheet.querySelector('[data-act="cancel"]').addEventListener('click', () => {
+        openAdminPanel();
+      });
+      sheet.querySelector('[data-act="save"]').addEventListener('click', () => {
+        createCoachSession(state);
+      });
+    }
+
+    refresh();
+    overlay.classList.add('show');
+  }
+
+  function createCoachSession(state){
+    if (!isAdmin()) return showToast('需要管理員權限', true);
+    if (!state.time || !state.coachId) return showToast('資料不完整', true);
+    const headTime = state.time;
+    const tailTime = addMin(headTime, 30);
+    const head = courts[state.court][headTime];
+    const tail = courts[state.court][tailTime];
+    if (!head || !tail) return showToast('時段無效', true);
+    /* Wipe existing bookings on that half — admin override; warn-style toast */
+    const wiped = (head[state.side].p || []).length + (tail[state.side].p || []).length;
+    head[state.side] = {
+      k:'coach', coach: state.coachId,
+      p: state.students.slice(0, MAX_STUDENTS),
+      dur: 60, span: `${headTime} — ${tailTime}`
+    };
+    tail[state.side] = {
+      k:'coach-tail', coach: state.coachId,
+      p: state.students.slice(0, MAX_STUDENTS),
+      span: `${headTime} — ${tailTime}`
+    };
+    const coachUser = getUser(state.coachId);
+    showToast(`已新增 ${coachUser.displayName} ${headTime} 教練課${wiped?` · 覆蓋 ${wiped} 位舊預約`:''}`);
+    openAdminPanel();
+    renderApp();
+  }
+
+  /* ============================================================
+     ADMIN MASTER PANEL
+  ============================================================ */
+  let adminTab = 'pending';
+  function openAdminPanel(){
+    if (!isAdmin()) return;
+    sheet.classList.remove('is-mine','is-coach-form');
+    sheet.classList.add('is-admin-panel');
+    renderAdminPanel();
+    overlay.classList.add('show');
+  }
+
+  function renderAdminPanel(){
+    if (!sheet.classList.contains('is-admin-panel')) return;
+    const adm = adminCount();
+    const pn = pendingList();
+    const dir = nonPendingList().sort((a,b) => {
+      const ord = { admin:0, coach:1, member:2, blocked:3 };
+      return (ord[a.status]||9) - (ord[b.status]||9);
+    });
+
+    sheet.innerHTML = `
+      <div class="grab"></div>
+      <div class="row">
+        <div class="a" style="background:var(--blue)">M</div>
+        <div style="flex:1;">
+          <div class="n">會員管理</div>
+          <div class="sb">管理員 ${adm}/${MAX_ADMINS} · 待審核 ${pn.length}</div>
+        </div>
+      </div>
+      <div class="admin-tabs">
+        <button class="${adminTab==='pending'?'active':''}" data-tab="pending">待審核 (${pn.length})</button>
+        <button class="${adminTab==='members'?'active':''}" data-tab="members">成員 (${dir.length})</button>
+        <button class="${adminTab==='coach'?'active':''}" data-tab="coach">教練課</button>
+      </div>
+      <div id="admin-list">${
+        adminTab === 'pending' ? renderPendingList(pn) :
+        adminTab === 'members' ? renderDirectory(dir) :
+        renderCoachManagement()
+      }</div>
+    `;
+
+    sheet.querySelectorAll('.admin-tabs button').forEach(b => {
+      b.addEventListener('click', () => {
+        adminTab = b.getAttribute('data-tab');
+        renderAdminPanel();
+      });
+    });
+    bindAdminListActions();
+  }
+
+  function renderPendingList(list){
+    if (!list.length) return `<div class="empty-state">目前沒有待審核的申請</div>`;
+    return list.map(u => `
+      <div class="user-row">
+        <div class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</div>
+        <div class="info">
+          <div class="nm">${u.displayName}</div>
+          <div class="uid">${u.userId} · ${u.createdAt||''}</div>
+        </div>
+        <div class="ops">
+          <button class="green" data-act="approve" data-uid="${u.userId}">核准</button>
+          <button class="red"   data-act="reject"  data-uid="${u.userId}">拒絕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderDirectory(list){
+    return list.map(u => {
+      const isMe = u.userId === currentUserId;
+      const isLastAdm = u.status === STATUS.ADMIN && adminCount() <= 1;
+      const adminFull = adminCount() >= MAX_ADMINS && u.status !== STATUS.ADMIN;
+      const blocked = u.status === STATUS.BLOCKED;
+      return `
+        <div class="user-row">
+          <div class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</div>
+          <div class="info">
+            <div class="nm">${u.displayName} <span class="badge ${u.status}">${labelForStatus(u.status)}</span> ${isMe ? '<span class="badge mine">YOU</span>' : ''}</div>
+            <div class="uid">${u.userId} · NTRP ${u.ntrp || '—'} · ${u.playCount||0} 次</div>
+          </div>
+          <div class="ops">
+            ${ blocked
+                ? `<button class="green" data-act="unblock" data-uid="${u.userId}">解封</button>`
+                : `<button class="red"   data-act="block"   data-uid="${u.userId}" ${isLastAdm||isMe?'disabled':''}>封鎖</button>` }
+            <button data-act="role-member" data-uid="${u.userId}" ${u.status===STATUS.MEMBER||isLastAdm?'disabled':''}>會員</button>
+            <button data-act="role-coach"  data-uid="${u.userId}" ${u.status===STATUS.COACH ||isLastAdm?'disabled':''}>教練</button>
+            <button data-act="role-admin"  data-uid="${u.userId}" ${u.status===STATUS.ADMIN ||adminFull?'disabled':''}>管理員</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderCoachManagement(){
+    /* List existing coach sessions across both courts */
+    const sessions = [];
+    ['A','B'].forEach(c => {
+      TIMES.forEach(t => {
+        const slot = courts[c][t]; if (!slot) return;
+        ['top','bottom'].forEach(side => {
+          const h = slot[side];
+          if (h && h.k === 'coach'){
+            sessions.push({ court:c, time:t, side, half:h });
+          }
+        });
+      });
+    });
+
+    return `
+      <button class="add-coach-cta" data-act="add-coach">＋ 新增教練課</button>
+      <div style="margin-top:14px; font-size:10px; color:var(--ink-soft); letter-spacing:.08em; text-transform:uppercase;">已排定 (${sessions.length})</div>
+      ${ sessions.length === 0
+        ? `<div class="empty-state">目前沒有教練課</div>`
+        : sessions.map(s => {
+            const cu = getUser(s.half.coach) || { displayName:'?', ic:'?', cl:'#888' };
+            const sideLabel = s.side === 'top' ? '前場' : '後場';
+            return `
+              <div class="user-row">
+                <div class="av" style="background:#2A4036">${cu.ic}${avPicHTML(cu)}</div>
+                <div class="info">
+                  <div class="nm">${cu.displayName} <span class="badge coach">COACH</span></div>
+                  <div class="uid">球場 ${s.court} · ${sideLabel} · ${s.half.span} · ${s.half.p.length}/${MAX_STUDENTS} 學員</div>
+                </div>
+                <div class="ops">
+                  <button data-act="open-coach" data-court="${s.court}" data-time="${s.time}" data-side="${s.side}">查看</button>
+                  <button class="red" data-act="cancel-coach-x" data-court="${s.court}" data-time="${s.time}" data-side="${s.side}">取消</button>
+                </div>
+              </div>
+            `;
+          }).join('')
+      }
+    `;
+  }
+
+  function bindAdminListActions(){
+    sheet.querySelectorAll('#admin-list button').forEach(b => {
+      b.addEventListener('click', () => {
+        const act = b.getAttribute('data-act');
+        const uid = b.getAttribute('data-uid');
+        if (act === 'approve') return approveUser(uid);
+        if (act === 'reject')  return rejectUser(uid);
+        if (act === 'block')   return blockUser(uid);
+        if (act === 'unblock') return unblockUser(uid);
+        if (act === 'role-member') return setStatus(uid, STATUS.MEMBER);
+        if (act === 'role-coach')  return setStatus(uid, STATUS.COACH);
+        if (act === 'role-admin')  return setStatus(uid, STATUS.ADMIN);
+        if (act === 'add-coach')   return openAddCoachSession();
+        if (act === 'open-coach'){
+          const c = b.getAttribute('data-court'),
+                t = b.getAttribute('data-time'),
+                s = b.getAttribute('data-side');
+          return openCoach(courts[c][t][s], { court:c, time:t, side:s });
+        }
+        if (act === 'cancel-coach-x'){
+          const c = b.getAttribute('data-court'),
+                t = b.getAttribute('data-time'),
+                s = b.getAttribute('data-side');
+          cancelCoachSession({ court:c, time:t, side:s });
+          openAdminPanel();
+        }
+      });
+    });
+  }
+
+  function rerenderAdminPanel(){
+    if (sheet.classList.contains('is-admin-panel')) renderAdminPanel();
+  }
+
+  /* ============================================================
+     QUICK BOOK / JOIN — booking rules enforced here
+     - max 2 consecutive 30-min slots (so 3-in-a-row is blocked)
+     - second consecutive slot is "replaceable"
+     - if a target half is full of replaceable players AND the booker
+       has no adjacent booking, allow replace
+  ============================================================ */
+  function joinSeat(context){
+    /* Convenience: if context provided, target it; else find any open seat at active time */
+    if (!canBook()){ showToast(bookingRejectMessage(), true); return; }
+    if (context && context.court) return joinSeatAt(context);
+    const t = TIMES[activeIdx];
+    let found = null;
+    ['A','B'].forEach(c => {
+      if (found) return;
+      const slot = courts[c][t];
+      ['top','bottom'].forEach(k => {
+        if (found) return;
+        const s = slot[k];
+        if (s.k === 'coach' || s.k === 'coach-tail') return;
+        if ((s.p || []).indexOf(currentUserId) >= 0) return;
+        if ((s.p || []).length < 2){
+          found = { court:c, side:k, time:t };
+        }
+      });
+    });
+    if (!found){ showToast('此時段已滿，請選其他時間', true); return; }
+    joinSeatAt(found);
+  }
+
+  function joinSeatAt(ctx){
+    if (!canBook()){ showToast(bookingRejectMessage(), true); return; }
+    const slot = courts[ctx.court][ctx.time];
+    const half = slot[ctx.side];
+    if (!half) return;
+    if (half.k === 'coach' || half.k === 'coach-tail'){
+      showToast('教練課時段', true); return;
+    }
+    if ((half.p || []).indexOf(currentUserId) >= 0){
+      showToast('你已在此預約', true); return;
+    }
+
+    const adj = adjacentBookingCount(currentUserId, ctx.court, ctx.time);
+
+    /* If full and not replaceable → blocked. If has replaceable → handled separately. */
+    if ((half.p || []).length >= 2){
+      if (halfHasReplaceable(half) && adj === 0){
+        const target = half.replaceable[0];
+        return replaceBooking(ctx, target);
+      }
+      showToast('此半場已滿', true); return;
+    }
+
+    /* Consecutive-slot rule: max 2 consecutive */
+    if (adj >= 2){
+      showToast('不可連續超過 2 個時段', true); return;
+    }
+    half.p = (half.p || []).concat([currentUserId]);
+    if (adj === 1){
+      half.replaceable = (half.replaceable || []).concat([currentUserId]);
+      showToast('已加入 · 此為連續第二格，可被替補', false);
+    } else {
+      showToast(`已加入 · ${ctx.court} ${ctx.side==='top'?'前場':'後場'} · ${ctx.time}`);
+    }
+    normalizeHalfState(half);
+    overlay.classList.remove('show');
+    renderApp();
+  }
+
+  function replaceBooking(ctx, targetUid){
+    if (!canBook()){ showToast(bookingRejectMessage(), true); return; }
+    const slot = courts[ctx.court][ctx.time];
+    const half = slot[ctx.side];
+    if (!half || !isReplaceableEntry(half, targetUid)){
+      showToast('此預約無法被替補', true); return;
+    }
+    const adj = adjacentBookingCount(currentUserId, ctx.court, ctx.time);
+    if (adj > 0){
+      showToast('替補者不能在相鄰時段已有預約', true); return;
+    }
+    half.p = (half.p || []).map(x => x === targetUid ? currentUserId : x);
+    half.replaceable = (half.replaceable || []).filter(x => x !== targetUid);
+    normalizeHalfState(half);
+    const tu = getUser(targetUid);
+    showToast(`已替補 ${tu ? tu.displayName : ''} 的位置`);
+    overlay.classList.remove('show');
+    renderApp();
+  }
+
+  function cancelMyBooking(ctx){
+    const slot = courts[ctx.court][ctx.time];
+    const half = slot[ctx.side];
+    half.p = (half.p || []).filter(x => x !== currentUserId);
+    half.replaceable = (half.replaceable || []).filter(x => x !== currentUserId);
+    normalizeHalfState(half);
+    showToast('已取消你的預約');
+    overlay.classList.remove('show');
+    renderApp();
+  }
+
+  /* ============================================================
+     LINE LIFF LOGIN
+     - When LIFF_ID is set, use real LINE login.
+     - When LIFF_ID is the placeholder, fall back to demo mode.
+  ============================================================ */
+  function handleLogin(userId, displayName, pictureUrl){
+    const isFirstLogin = !USERS[userId];
+    if (isFirstLogin){
+      USERS[userId] = {
+        userId,
+        displayName: displayName || '新會員',
+        ic: (displayName || '新').slice(0,1),
+        cl: '#A8A89C',
+        pictureUrl: pictureUrl || null,
+        status: STATUS.PENDING,
+        createdAt: new Date().toISOString().slice(0,10),
+        ntrp: '—', playCount: 0, strengths: []
+      };
+      showToast('已建立帳號 · 等待管理員審核');
+    } else {
+      /* Refresh LINE profile fields on every login */
+      const u = USERS[userId];
+      if (displayName) { u.displayName = displayName; u.ic = displayName.slice(0,1); }
+      if (pictureUrl != null) u.pictureUrl = pictureUrl;
+    }
+    currentUserId = userId;
+    refreshDemoBar();
+    route();
+  }
+
+  function isInvalidTokenError(e){
+    if (!e) return false;
+    if (e.code === 'INVALID_ID_TOKEN') return true;
+    return /INVALID_ID_TOKEN/i.test(e.message || String(e));
+  }
+
+  function reLoginAfterTokenError(){
+    try { liff.logout(); } catch(_){}
+    try { liff.login(); } catch(_){
+      showLiffErrorScreen('LINE 登入逾期，無法自動續登', '請從 LINE 內重新開啟此應用');
+    }
+  }
+
+  async function initLiff(){
+    if (!isLiffEnabled) return false;
+    try {
+      await liff.init({ liffId: LIFF_ID });
+    } catch(e){
+      console.error('liff.init failed:', e);
+      if (isInvalidTokenError(e)){ reLoginAfterTokenError(); return false; }
+      showLiffErrorScreen('無法連線至 LINE 登入服務',
+        (e && (e.message || e.code)) || '請從 LINE app 內開啟此頁面，或稍後再試。');
+      return false;
+    }
+    if (!liff.isLoggedIn()){
+      try { liff.login(); } catch(e){
+        showLiffErrorScreen('LINE 登入無法啟動', e.message || String(e));
+      }
+      return false; /* redirect to LINE; abort boot */
+    }
+    try {
+      const profile = await liff.getProfile();
+      handleLogin(profile.userId, profile.displayName, profile.pictureUrl);
+      return true;
+    } catch(e){
+      console.error('liff.getProfile failed:', e);
+      if (isInvalidTokenError(e)){ reLoginAfterTokenError(); return false; }
+      showLiffErrorScreen('無法取得 LINE 個人資料',
+        (e && (e.message || e.code)) || '請稍後再試');
+      return false;
+    }
+  }
+
+  function liffLogout(){
+    if (isLiffEnabled && window.liff && liff.isLoggedIn()){
+      try { liff.logout(); } catch(e){}
+    }
+  }
+
+  /* Full-screen error screen for unrecoverable LIFF failures */
+  function showLiffErrorScreen(title, detail){
+    /* If already shown, just update */
+    let host = document.getElementById('liff-error');
+    if (!host){
+      host = document.createElement('div');
+      host.id = 'liff-error';
+      host.style.cssText = 'position:fixed;inset:0;background:#EAE2D2;z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;';
+      document.body.appendChild(host);
+    }
+    host.innerHTML =
+      '<div style="max-width:340px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,\'Helvetica Neue\',\'Noto Sans TC\',sans-serif;">' +
+        '<div style="width:64px;height:64px;margin:0 auto 18px;border-radius:50%;background:rgba(183,62,62,.14);color:#B73E3E;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;">!</div>' +
+        '<h2 style="font-size:18px;margin:0 0 8px;color:#2D3D34;">' + title + '</h2>' +
+        '<p style="font-size:12px;color:#6B7E72;line-height:1.6;margin:0 0 14px;">請從 LINE app 內開啟此頁面，或稍後再試。</p>' +
+        '<div style="font-family:ui-monospace,monospace;font-size:10px;color:#8A9A8E;background:#FFF;padding:8px 10px;border-radius:6px;margin-bottom:18px;word-break:break-all;">' + detail + '</div>' +
+        '<button id="liff-retry" style="background:#2D3D34;color:#EAE2D2;border:0;padding:10px 22px;border-radius:999px;font-size:13px;cursor:pointer;font-family:inherit;">重新嘗試</button>' +
+      '</div>';
+    document.getElementById('liff-retry').addEventListener('click', () => location.reload());
+  }
+
+  /* Demo-only: triggered by the LINE button on the login screen
+     when LIFF_ID hasn't been set. */
+  function simulateLineLogin(){
+    if (isLiffEnabled){
+      liff.login();
+      return;
+    }
+    handleLogin('U0000000001', 'Jacky', null);
+  }
+
+  function simulateNewUserLogin(){
+    const ts = Date.now().toString().slice(-7);
+    const newUid = 'U9' + ts.padStart(10, '0').slice(-10);
+    const newName = '新會員 ' + ts.slice(-3);
+    handleLogin(newUid, newName, null);
+    showToast(`新使用者 ${newName} 已建立 · 狀態 PENDING`);
+  }
+
+  function logout(){
+    liffLogout();
+    currentUserId = null;
+    refreshDemoBar();
+    route();
+  }
+
+  /* ============================================================
+     DEMO BAR
+  ============================================================ */
+  const demoSel = document.getElementById('demo-user-select');
+  const demoWho = document.getElementById('demo-who');
+
+  function refreshDemoBar(){
+    demoSel.innerHTML = '<option value="">— 未登入 —</option>' +
+      Object.values(USERS)
+        .sort((a,b) => a.userId.localeCompare(b.userId))
+        .map(u => `<option value="${u.userId}" ${u.userId===currentUserId?'selected':''}>${u.displayName} (${labelForStatus(u.status)})</option>`)
+        .join('');
+    if (currentUserId && USERS[currentUserId]){
+      demoWho.textContent = `${USERS[currentUserId].userId}`;
+    } else {
+      demoWho.textContent = '—';
+    }
+  }
+
+  demoSel.addEventListener('change', () => {
+    const v = demoSel.value;
+    currentUserId = v || null;
+    refreshDemoBar();
+    route();
+  });
+
+  document.getElementById('demo-newuser').addEventListener('click', simulateNewUserLogin);
+  document.getElementById('demo-logout').addEventListener('click', logout);
+  document.getElementById('line-login').addEventListener('click', simulateLineLogin);
+
+  /* ============================================================
+     EVENT WIRING
+  ============================================================ */
+  document.getElementById('quick').addEventListener('click', () => joinSeat());
+  adminBtn.addEventListener('click', openAdminPanel);
+  meBtn.addEventListener('click', () => openProfile(currentUserId, null));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') overlay.classList.remove('show');
+    if (!screens.app.classList.contains('active')) return;
+    if (e.key === 'ArrowLeft' && activeIdx > 0){ activeIdx--; renderApp(); }
+    if (e.key === 'ArrowRight' && activeIdx < TIMES.length - 1){ activeIdx++; renderApp(); }
+  });
+
+  /* ============================================================
+     INIT
+  ============================================================ */
+  async function boot(){
+    refreshDemoBar();
+    if (isLiffEnabled){
+      /* Hide demo bar when running in real LIFF mode */
+      const bar = document.querySelector('.demo-bar');
+      if (bar) bar.style.display = 'none';
+      const ok = await initLiff();
+      if (ok) return; /* handleLogin already called route() */
+    }
+    /* Demo fallback */
+    route();
+  }
+  boot();
+
+})();
+</script>
+
+</body>
+</html>
