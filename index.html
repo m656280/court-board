@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#EAE2D2">
 <title>Court Board</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
   :root {
     --bg: #EAE2D2;
@@ -3542,8 +3544,19 @@
     /* Demo fallback */
     route();
   }
-  boot();
+// 🔥 Firebase 初始化
+const firebaseConfig = {
+  apiKey: "你的",
+  authDomain: "你的",
+  projectId: "你的",
+  storageBucket: "你的",
+  messagingSenderId: "你的",
+  appId: "你的"
+};
 
+const app = firebase.initializeApp(firebaseConfig);
+
+boot();
 })();
 </script>
 
