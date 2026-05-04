@@ -1382,7 +1382,14 @@
   function saveScheduleDate(d){
     safeSet(STORAGE_KEYS.SCHEDULE, d);
   }
-  function persist(){ saveUsers(); saveCourts(); }
+  function persist(){
+  saveUsers();
+  saveCourts();
+
+  db.collection("courts").doc("main").set({
+    data: courts
+  });
+}
 
   /* ============================================================
      DATE HELPERS
@@ -3555,7 +3562,7 @@ const firebaseConfig = {
 };
 
 const app = firebase.initializeApp(firebaseConfig);
-
+const db = firebase.firestore();
 boot();
 })();
 </script>
