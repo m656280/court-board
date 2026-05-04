@@ -191,6 +191,29 @@
     font-weight: 700;
   }
   .cb-admin-btn:hover { background: #3F5C77; }
+  /* Pulse + amber accent when there are pending members waiting. */
+  .cb-admin-btn.has-pending {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--amber) 130%);
+    box-shadow: 0 0 0 0 rgba(200,137,58,.5);
+    animation: cb-pulse 1.8s ease-out infinite;
+  }
+  .cb-admin-btn.has-pending .pcount {
+    background: var(--amber);
+    color: #FFF;
+  }
+  @keyframes cb-pulse {
+    0%   { box-shadow: 0 0 0 0   rgba(200,137,58,.45); }
+    70%  { box-shadow: 0 0 0 10px rgba(200,137,58,0); }
+    100% { box-shadow: 0 0 0 0   rgba(200,137,58,0); }
+  }
+
+  .cb-dir-btn {
+    background: rgba(45,61,52,.06); color: var(--ink);
+    border: 0; padding: 5px 10px; border-radius: 999px;
+    font-size: 10px; font-weight: 500; cursor: pointer;
+    letter-spacing: .04em; font-family: inherit;
+  }
+  .cb-dir-btn:hover { background: rgba(45,61,52,.10); }
 
   .cb-me {
     display: inline-flex; align-items: center; gap: 6px;
@@ -206,6 +229,12 @@
   .cb-me .nm { font-size: 11px; color: var(--ink); font-weight: 500; }
 
   .cb-title { font-size: 22px; font-weight: 600; margin: 16px 2px 4px; letter-spacing: .01em; }
+  .cb-title .cb-date {
+    font-size: 12px; font-weight: 500;
+    color: var(--ink-soft); letter-spacing: .04em;
+    margin-left: 6px;
+    font-family: ui-monospace, "SF Mono", monospace;
+  }
   .cb-sub { font-size: 11px; color: var(--ink-soft); margin: 0 2px 16px; min-height: 14px; }
 
   .cb-time {
@@ -408,6 +437,57 @@
     padding: 2px 7px; border-radius: 999px;
     box-shadow: 0 1px 3px rgba(74,107,138,.25);
     letter-spacing: .04em;
+  }
+
+  /* Court roster — explicit player list under each court for the active time. */
+  .cb-roster {
+    margin-top: 10px;
+    padding: 8px 4px 4px;
+    display: flex; flex-direction: column; gap: 6px;
+    border-top: 0.5px dashed rgba(45,61,52,.15);
+  }
+  .roster-row {
+    display: flex; align-items: center;
+    gap: 6px; flex-wrap: wrap;
+  }
+  .roster-row .rl {
+    font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 600;
+    flex-shrink: 0; min-width: 38px;
+  }
+  .roster-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(45,61,52,.06);
+    border: 0; border-radius: 999px;
+    padding: 3px 9px 3px 3px;
+    font-size: 11px; cursor: pointer;
+    font-family: inherit; color: var(--ink);
+    transition: background .12s;
+  }
+  .roster-pill:hover { background: rgba(45,61,52,.12); }
+  .roster-pill.empty {
+    background: transparent; color: var(--ink-mute);
+    padding: 3px 4px; cursor: default;
+    font-style: italic;
+  }
+  .roster-pill.empty:hover { background: transparent; }
+  .roster-pill.coach {
+    background: rgba(42,64,54,.14); color: var(--coach-from);
+    font-weight: 600;
+  }
+  .roster-pill.coach:hover { background: rgba(42,64,54,.20); }
+  .roster-pill.is-mine { background: var(--blue-pale); color: var(--blue); font-weight: 600; }
+  .roster-pill .av {
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #FFF; font-size: 9px; font-weight: 600;
+    position: relative; overflow: hidden;
+    flex-shrink: 0;
+  }
+  .roster-pill .av img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; border-radius: 50%;
   }
 
   .cb-slots {
@@ -1156,6 +1236,7 @@
     <div class="cb-top">
       <div class="cb-brand"><span>COURT BOARD</span><span class="d"></span></div>
       <div class="cb-actions">
+        <button class="cb-dir-btn" id="directory-open" style="display:none;">會員名單</button>
         <button class="cb-admin-btn" id="admin-open" style="display:none;">
           管理 <span class="pcount" id="admin-pcount">0</span>
         </button>
@@ -1166,7 +1247,7 @@
       </div>
     </div>
 
-    <div class="cb-title">今日場次總覽</div>
+    <div class="cb-title">今日場次總覽 <span class="cb-date" id="cb-date"></span></div>
     <div class="cb-sub" id="cb-sub">點任一時段切換球場狀態</div>
 
     <div class="cb-time" id="cb-time">
@@ -1193,6 +1274,7 @@
             <div class="cb-half bottom" id="A-bottom"></div>
           </div>
         </div>
+        <div class="cb-roster" id="roster-A"></div>
         <div class="cb-slots" id="slots-A"></div>
       </div>
 
@@ -1213,6 +1295,7 @@
             <div class="cb-half bottom" id="B-bottom"></div>
           </div>
         </div>
+        <div class="cb-roster" id="roster-B"></div>
         <div class="cb-slots" id="slots-B"></div>
       </div>
 
@@ -1270,6 +1353,52 @@
   /* Bootstrap admin: real LINE userId that must always have ADMIN status,
      never fall into PENDING or BLOCKED, and route directly to the app. */
   const BOOTSTRAP_ADMIN_ID = 'Ub1cc54fbbecfcea070a29ce8762fb05b';
+
+  /* ============================================================
+     STORAGE LAYER — frontend prototype, backed by localStorage.
+     When migrating to Firebase/Supabase later, only these helpers
+     and applyDailyReset() need to change.
+  ============================================================ */
+  const STORAGE_KEYS = {
+    USERS:    'cb.users.v1',
+    COURTS:   'cb.courts.v1',
+    SCHEDULE: 'cb.scheduleDate.v1'
+  };
+
+  function safeGet(key){
+    try { return localStorage.getItem(key); } catch(_){ return null; }
+  }
+  function safeSet(key, value){
+    try { localStorage.setItem(key, value); } catch(_){}
+  }
+  function saveUsers(){
+    try { safeSet(STORAGE_KEYS.USERS, JSON.stringify(USERS)); } catch(_){}
+  }
+  function saveCourts(){
+    try { safeSet(STORAGE_KEYS.COURTS, JSON.stringify(courts)); } catch(_){}
+  }
+  function saveScheduleDate(d){
+    safeSet(STORAGE_KEYS.SCHEDULE, d);
+  }
+  function persist(){ saveUsers(); saveCourts(); }
+
+  /* ============================================================
+     DATE HELPERS
+  ============================================================ */
+  function todayISO(){
+    const d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth()+1).padStart(2,'0') + '-' +
+      String(d.getDate()).padStart(2,'0');
+  }
+  function todayLabel(){
+    const d = new Date();
+    const y  = d.getFullYear();
+    const m  = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    const wk = ['日','一','二','三','四','五','六'][d.getDay()];
+    return y + '/' + m + '/' + dd + ' 週' + wk;
+  }
   const STATUS = {
     PENDING: 'pending',
     MEMBER:  'member',
@@ -1330,6 +1459,15 @@
     return !!(u && u.status === STATUS.OWNER);
   }
   function isCoach(uid) { const u = getUser(uid); return u && u.status === STATUS.COACH; }
+  /* OWNER inheritance — OWNER counts as ADMIN AND as COACH for any "-Like" check. */
+  function isAdminLike(uid){
+    const u = uid ? getUser(uid) : me();
+    return !!(u && (u.status === STATUS.ADMIN || u.status === STATUS.OWNER));
+  }
+  function isCoachLike(uid){
+    const u = uid ? getUser(uid) : me();
+    return !!(u && (u.status === STATUS.COACH || u.status === STATUS.OWNER));
+  }
   function canBook() {
     const u = me();
     return u && (u.status === STATUS.MEMBER || u.status === STATUS.COACH ||
@@ -1554,17 +1692,29 @@
     meAv.innerHTML = u.ic + avPicHTML(u);
     meNm.textContent = u.displayName;
 
-    if (u.status === STATUS.ADMIN){
+    /* Admin button visible for ADMIN AND OWNER; pending highlight when > 0. */
+    if (isAdminLike()){
       adminBtn.style.display = 'inline-flex';
-      adminPCount.textContent = pendingList().length;
+      const pn = pendingList().length;
+      adminPCount.textContent = pn;
+      adminBtn.classList.toggle('has-pending', pn > 0);
     } else {
       adminBtn.style.display = 'none';
     }
+
+    /* Member directory button visible to anyone who can use the system. */
+    const dirBtn = document.getElementById('directory-open');
+    if (dirBtn) dirBtn.style.display = canBook() ? 'inline-flex' : 'none';
+
+    /* Date label beside the title — refresh in case the day rolled over. */
+    const dateEl = document.getElementById('cb-date');
+    if (dateEl) dateEl.textContent = todayLabel();
 
     ['A','B'].forEach(c => {
       const slot = courts[c][TIMES[activeIdx]];
       renderHalf(document.getElementById(c+'-top'),    slot.top,    { court:c, side:'top',    time:TIMES[activeIdx] });
       renderHalf(document.getElementById(c+'-bottom'), slot.bottom, { court:c, side:'bottom', time:TIMES[activeIdx] });
+      renderRoster(c);
       renderSlots(c);
     });
     const pct = (activeIdx / (TIMES.length - 1)) * 88 + 6;
@@ -1575,7 +1725,12 @@
                : u.status === STATUS.ADMIN ? '管理員'
                : u.status === STATUS.COACH ? '教練' : '會員';
     subEl.textContent = `${t} — ${addMin(t,30)} · ${role}模式`;
-    overlay.classList.remove('show');
+
+    /* NOTE: do NOT close the overlay here. Closing should be done explicitly
+       by the action that finished (joinSeatAt, cancelMyBooking, etc.). When
+       the admin panel or profile sheet is open we want them to STAY open while
+       the underlying app re-renders. */
+    persist();
   }
 
   function isMineSlot(slot){
@@ -1669,6 +1824,47 @@
       }
       el.appendChild(w);
     }
+  }
+
+  /* Court roster — explicit, easy-to-read list of who's on each half right now.
+     Tapping any avatar opens that user's profile sheet. */
+  function renderRoster(courtKey){
+    const wrap = document.getElementById('roster-' + courtKey);
+    if (!wrap) return;
+    const t = TIMES[activeIdx];
+    const slot = courts[courtKey][t];
+
+    function pillForUser(uid, opts){
+      const u = getUser(uid) || { ic:'?', cl:'#888', displayName:'?' };
+      const cls = (uid === currentUserId) ? 'roster-pill is-mine' : 'roster-pill';
+      const extra = opts && opts.extra ? `<span style="font-size:9px; opacity:.7; margin-left:4px;">${opts.extra}</span>` : '';
+      return `<button class="${cls}" data-uid="${uid}"><span class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</span>${u.displayName}${extra}</button>`;
+    }
+
+    wrap.innerHTML = ['top','bottom'].map(side => {
+      const h = slot[side];
+      const label = side === 'top' ? '前場' : '後場';
+      if (!h) return `<div class="roster-row"><span class="rl">${label}</span><span class="roster-pill empty">空位</span></div>`;
+      if (h.k === 'coach' || h.k === 'coach-tail'){
+        const cu = getUser(h.coach) || { ic:'?', cl:'#888', displayName:'Coach' };
+        const studs = (h.p || []).map(uid => pillForUser(uid)).join('');
+        const coachPill = `<button class="roster-pill coach" data-uid="${h.coach}"><span class="av" style="background:#2A4036">${cu.ic}${avPicHTML(cu)}</span>${cu.displayName} · ${(h.p||[]).length}/${MAX_STUDENTS}</button>`;
+        return `<div class="roster-row"><span class="rl">${label}</span>${coachPill}${studs}</div>`;
+      }
+      const players = (h.p || []);
+      if (players.length === 0){
+        return `<div class="roster-row"><span class="rl">${label}</span><span class="roster-pill empty">空位</span></div>`;
+      }
+      const pills = players.map(uid => pillForUser(uid)).join('');
+      return `<div class="roster-row"><span class="rl">${label}</span>${pills}</div>`;
+    }).join('');
+
+    wrap.querySelectorAll('.roster-pill[data-uid]').forEach(b => {
+      b.addEventListener('click', e => {
+        e.stopPropagation();
+        openProfile(b.getAttribute('data-uid'), null);
+      });
+    });
   }
 
   function statusText(slot){
@@ -1797,6 +1993,37 @@
     rerenderAdminPanel(); renderApp();
   }
 
+  /* canDelete(targetUid):
+       - OWNER may delete anyone except OWNER (themselves)
+       - ADMIN may delete MEMBER / COACH / PENDING / BLOCKED
+       - ADMIN may NOT delete OWNER nor another ADMIN
+       - Cannot delete yourself */
+  function canDelete(targetUid){
+    if (!isAdminLike()) return false;
+    const t = getUser(targetUid); if (!t) return false;
+    if (targetUid === currentUserId) return false;
+    if (t.status === STATUS.OWNER) return false;
+    if (isOwner()) return true;
+    /* current is ADMIN (not OWNER) */
+    return t.status !== STATUS.ADMIN;
+  }
+
+  function deleteUser(uid){
+    if (!canDelete(uid)){
+      showToast('無權限刪除這位使用者', true);
+      return;
+    }
+    const u = getUser(uid); if (!u) return;
+    if (!confirm('確定要刪除這位會員？此操作無法復原。')) return;
+    /* Remove from all bookings + coach student lists, then drop from USERS. */
+    removeFromAllBookings(uid);
+    delete USERS[uid];
+    persist();
+    showToast('會員已刪除');
+    rerenderAdminPanel();
+    renderApp();
+  }
+
   function unblockUser(uid){
     if (!isAdmin()) return showToast('需要管理員權限', true);
     const u = getUser(uid); if (!u) return;
@@ -1889,6 +2116,16 @@
     sheet.classList.toggle('is-mine', mine);
     sheet.classList.remove('is-admin-panel','is-coach-form');
 
+    /* Local draft state — only used when viewing OWN profile.
+       Clones of u.ntrp / u.strengths so selection edits never touch USERS. */
+    if (mine){
+      sheet._draftNtrp = u.ntrp || '—';
+      sheet._draftStrengths = (u.strengths || []).slice();
+    } else {
+      sheet._draftNtrp = null;
+      sheet._draftStrengths = null;
+    }
+
     const role = roleBadgeHTML(u);
     const replaceableHere = context && courts[context.court] &&
                             isReplaceableEntry(courts[context.court][context.time][context.side], uid);
@@ -1905,13 +2142,15 @@
     /* Initial char + optional LINE picture overlay (auto-removes on 404) */
     const avHTML = `<div class="a" style="${avatarBg(u, mine)}">${u.ic}${avPicHTML(u)}</div>`;
 
+    /* Members can't see LINE userId of others; only ADMIN/OWNER (or self) can. */
+    const showUid = mine || isAdminLike();
     sheet.innerHTML = `
       <div class="grab"></div>
       <div class="row">
         ${avHTML}
         <div style="flex:1; min-width:0;">
           <div class="n">${u.displayName} ${role}</div>
-          <div class="sb"><span class="uid">${u.userId}</span></div>
+          ${ showUid ? `<div class="sb"><span class="uid">${u.userId}</span></div>` : '' }
         </div>
         ${actBtn}
       </div>
@@ -1923,7 +2162,7 @@
         <div class="label">擅長位置 · Strengths</div>
         <div class="tags">${strengthTagsHTML(u.strengths)}</div>
       </div>
-      ${ mine ? renderMyEditPanel(u) : '' }
+      ${ mine ? renderMyEditPanel(sheet._draftNtrp, sheet._draftStrengths) : '' }
       ${ replaceableHere ? `<div style="margin-top:12px; font-size:11px; color:var(--amber); background:var(--amber-pale); padding:8px 10px; border-radius:8px;">此預約為連續第二格，可被尚未預約的會員替補。</div>` : '' }
       ${ adminActionsForUser(u, context) }
     `;
@@ -1939,24 +2178,30 @@
         joinSeatAt(context);
       }
     });
-    if (mine) bindMyEditPanel(context);
+    if (mine) bindMyEditPanel();
     bindAdminButtons(u, context);
   }
 
-  /* ------- Self-edit panel: NTRP dropdown + strengths multi-select ------- */
+  /* ------- Self-edit panel: NTRP dropdown + strengths multi-select -------
+     Uses LOCAL DRAFT STATE per opening — selection only mutates the draft,
+     never the underlying USERS or any rendering outside this panel.
+     Save commits + persists + updates DOM in place (no full re-render).
+     Cancel discards the draft and closes the sheet. */
   const NTRP_OPTIONS = ['2.0','2.5','3.0','3.5','4.0','4.5','5.0+'];
 
-  function renderMyEditPanel(u){
+  /* Draft state lives on the sheet element so it survives between
+     handler calls but is reset whenever a new openProfile() runs. */
+  function renderMyEditPanel(draftNtrp, draftStrengths){
     const ntrpHTML = NTRP_OPTIONS.map(v =>
-      `<option value="${v}" ${u.ntrp === v ? 'selected' : ''}>${v}</option>`
+      `<option value="${v}" ${draftNtrp === v ? 'selected' : ''}>${v}</option>`
     ).join('');
-    const cur = u.strengths || [];
     const tagsHTML = STRENGTH_KEYS.map(k => {
       const en = STRENGTH_INFO[k] || '';
-      return `<button type="button" class="strength-opt ${cur.indexOf(k)>=0?'on':''}" data-key="${k}">${k}<span class="en">${en}</span></button>`;
+      const on = draftStrengths.indexOf(k) >= 0 ? ' on' : '';
+      return `<button type="button" class="strength-opt${on}" data-key="${k}">${k}<span class="en">${en}</span></button>`;
     }).join('');
     return `
-      <div class="cb-edit-profile">
+      <div class="cb-edit-profile" id="my-edit-panel">
         <div class="label">編輯個人資料 · Edit profile</div>
         <div class="form-row">
           <label>NTRP</label>
@@ -1966,29 +2211,76 @@
           <label>擅長位置 (Strengths)</label>
           <div class="strength-pick" id="my-strengths">${tagsHTML}</div>
         </div>
-        <button type="button" class="save-profile-btn" id="save-profile">儲存資料</button>
+        <div style="display:flex; gap:8px; margin-top:14px;">
+          <button type="button" class="save-profile-btn" id="cancel-profile" style="flex:1; background:rgba(45,61,52,.08); color:var(--ink);">取消</button>
+          <button type="button" class="save-profile-btn" id="save-profile" style="flex:2;">儲存資料</button>
+        </div>
       </div>
     `;
   }
 
-  function bindMyEditPanel(context){
-    sheet.querySelectorAll('#my-strengths .strength-opt').forEach(b => {
-      b.addEventListener('click', () => b.classList.toggle('on'));
+  function bindMyEditPanel(){
+    /* Strength tag toggle — pure local state mutation, NO re-render. */
+    sheet.querySelectorAll('#my-strengths .strength-opt').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const key = btn.getAttribute('data-key');
+        const i = sheet._draftStrengths.indexOf(key);
+        if (i >= 0) sheet._draftStrengths.splice(i, 1);
+        else sheet._draftStrengths.push(key);
+        btn.classList.toggle('on');
+      });
     });
+
+    /* NTRP select — pure local state mutation, no other side effects. */
+    const ntrpSel = sheet.querySelector('#my-ntrp');
+    if (ntrpSel){
+      ntrpSel.addEventListener('change', e => {
+        e.stopPropagation();
+        sheet._draftNtrp = ntrpSel.value;
+      });
+    }
+
+    /* Cancel — discard draft and close the sheet. */
+    const cancel = sheet.querySelector('#cancel-profile');
+    if (cancel){
+      cancel.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        overlay.classList.remove('show');
+      });
+    }
+
+    /* Save — commit draft to USERS, persist, toast. Update read-only stats
+       in place via DOM, do NOT call openProfile/renderApp (which would
+       close the sheet because of the overlay-show toggle on app screen). */
     const save = sheet.querySelector('#save-profile');
-    if (!save) return;
-    save.addEventListener('click', () => {
-      const u = USERS[currentUserId]; if (!u) return;
-      const sel = sheet.querySelector('#my-ntrp');
-      if (sel) u.ntrp = sel.value;
-      u.strengths = Array.from(sheet.querySelectorAll('#my-strengths .strength-opt.on'))
-        .map(b => b.getAttribute('data-key'));
-      showToast('已更新個人資料');
-      /* Re-open to refresh both the read-only stats/tags and the editor */
-      openProfile(currentUserId, context);
-      /* Court board may show updated info too — refresh app */
-      if (screens.app.classList.contains('active')) renderApp();
-    });
+    if (save){
+      save.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const u = USERS[currentUserId]; if (!u) return;
+        u.ntrp = sheet._draftNtrp;
+        u.strengths = sheet._draftStrengths.slice();
+        persist();
+        showToast('個人資料已更新');
+
+        /* In-place DOM patch: update the read-only NTRP value and tag list
+           without tearing down the sheet. */
+        const ntrpVal = sheet.querySelector('.cb-sheet .stats .stat:first-child .v');
+        if (ntrpVal) ntrpVal.textContent = u.ntrp || '—';
+        const tagsBox = sheet.querySelector('.cb-strengths .tags');
+        if (tagsBox) tagsBox.innerHTML = strengthTagsHTML(u.strengths);
+
+        /* If the app screen is rendered behind this overlay, refresh roster
+           in case strengths/NTRP show somewhere later — but do this AFTER
+           the sheet is updated, so the user sees the success state first. */
+        if (screens.app.classList.contains('active')){
+          ['A','B'].forEach(c => renderRoster(c));
+        }
+      });
+    }
   }
 
   function adminActionsForUser(u, context){
@@ -2365,11 +2657,70 @@
   }
 
   /* ============================================================
+     PUBLIC MEMBER DIRECTORY — accessible to ANY approved user.
+     Members see: avatar / displayName / role / NTRP / strengths.
+     Members do NOT see: pending users, blocked users, userId, admin actions.
+     ADMIN/OWNER use the existing admin panel for full controls. */
+  function openPublicDirectory(){
+    if (!canBook()){ showToast(bookingRejectMessage(), true); return; }
+    sheet.classList.remove('is-mine','is-admin-panel','is-coach-form');
+    const adminLike = isAdminLike();
+    const visible = Object.values(USERS).filter(u => {
+      if (adminLike) return true;
+      /* Non-admin: only show approved (member/coach/admin/owner). */
+      return u.status === STATUS.MEMBER || u.status === STATUS.COACH ||
+             u.status === STATUS.ADMIN  || u.status === STATUS.OWNER;
+    }).sort((a,b) => {
+      const ord = { owner:0, admin:1, coach:2, member:3, pending:4, blocked:5 };
+      const oa = ord[a.status]||9, ob = ord[b.status]||9;
+      if (oa !== ob) return oa - ob;
+      return (a.displayName||'').localeCompare(b.displayName||'');
+    });
+
+    const rows = visible.map(u => {
+      const role = roleBadgeHTML(u);
+      const strengths = (u.strengths||[]).slice(0,3).map(s => `<span class="strength-tag" style="font-size:9px; padding:2px 7px;">${s}</span>`).join('');
+      return `
+        <div class="user-row" data-uid="${u.userId}" style="cursor:pointer;">
+          <div class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</div>
+          <div class="info">
+            <div class="nm">${u.displayName} ${role}</div>
+            <div class="uid" style="display:flex; gap:6px; align-items:center;">
+              <span style="font-family:inherit;color:var(--ink-soft);">NTRP ${u.ntrp || '—'} · ${u.playCount||0} 次</span>
+              ${strengths}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    sheet.innerHTML = `
+      <div class="grab"></div>
+      <div class="row">
+        <div class="a" style="background:var(--green)">M${avPicHTML(me())}</div>
+        <div style="flex:1; min-width:0;">
+          <div class="n">會員名單</div>
+          <div class="sb">${visible.length} 位 · ${adminLike ? '管理視角 (可看所有狀態)' : '會員視角'}</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;">${ rows || '<div class="empty-state">目前沒有可顯示的成員</div>' }</div>
+    `;
+    overlay.classList.add('show');
+
+    sheet.querySelectorAll('.user-row[data-uid]').forEach(row => {
+      row.addEventListener('click', () => openProfile(row.getAttribute('data-uid'), null));
+    });
+  }
+
+  /* ============================================================
      ADMIN MASTER PANEL
   ============================================================ */
   let adminTab = 'pending';
   function openAdminPanel(){
     if (!isAdmin()) return;
+    /* If there's anything pending, force-open on the 待審核 tab so admins
+       see waiting members immediately. */
+    if (pendingList().length > 0) adminTab = 'pending';
     sheet.classList.remove('is-mine','is-coach-form');
     sheet.classList.add('is-admin-panel');
     renderAdminPanel();
@@ -2426,7 +2777,8 @@
 
   function renderPendingList(list){
     if (!list.length) return `<div class="empty-state">目前沒有待審核的申請</div>`;
-    return list.map(u => `
+    const banner = `<div class="panel-notice" style="background:var(--amber-pale); color:var(--amber); border-color:rgba(200,137,58,.2); margin-bottom:10px;"><strong>有 ${list.length} 位會員等待審核</strong>，請逐一處理。</div>`;
+    return banner + list.map(u => `
       <div class="user-row">
         <div class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</div>
         <div class="info">
@@ -2497,6 +2849,9 @@
             <button data-act="role-coach"  data-uid="${u.userId}" ${u.status===STATUS.COACH ?'disabled':''}>教練</button>
             ${ meIsOwner
               ? `<button class="blue" data-act="role-admin" data-uid="${u.userId}" ${u.status===STATUS.ADMIN||adminFull?'disabled':''}>管理員</button>`
+              : '' }
+            ${ canDelete(u.userId)
+              ? `<button class="red" data-act="delete" data-uid="${u.userId}" title="刪除此會員">刪除</button>`
               : '' }
           </div>
         </div>
@@ -2761,6 +3116,7 @@
         if (act === 'reject')  return rejectUser(uid);
         if (act === 'block')   return blockUser(uid);
         if (act === 'unblock') return unblockUser(uid);
+        if (act === 'delete')  return deleteUser(uid);
         if (act === 'role-member') return setStatus(uid, STATUS.MEMBER);
         if (act === 'role-coach')  return setStatus(uid, STATUS.COACH);
         if (act === 'role-admin')  return setStatus(uid, STATUS.ADMIN);
@@ -2961,6 +3317,7 @@
       if (displayName) { u.displayName = displayName; u.ic = displayName.slice(0,1); }
       if (pictureUrl != null) u.pictureUrl = pictureUrl;
     }
+    persist();
     currentUserId = userId;
     refreshDemoBar();
     route();
@@ -3096,6 +3453,8 @@
   ============================================================ */
   document.getElementById('quick').addEventListener('click', () => joinSeat());
   adminBtn.addEventListener('click', openAdminPanel);
+  const dirBtn = document.getElementById('directory-open');
+  if (dirBtn) dirBtn.addEventListener('click', openPublicDirectory);
   meBtn.addEventListener('click', () => openProfile(currentUserId, null));
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
 
@@ -3109,7 +3468,69 @@
   /* ============================================================
      INIT
   ============================================================ */
+  function emptyCourtsForToday(){
+    /* Wipe all bookings and coach sessions for the new day,
+       keeping users / roles / profiles / NTRP / playCount intact. */
+    ['A','B'].forEach(c => {
+      courts[c] = {};
+      TIMES.forEach(t => { courts[c][t] = { top:{k:'open',p:[]}, bottom:{k:'open',p:[]} }; });
+    });
+  }
+
+  function initFromStorage(){
+    /* USERS — restore if saved, otherwise keep seed defaults. */
+    const rawU = safeGet(STORAGE_KEYS.USERS);
+    if (rawU){
+      try {
+        const saved = JSON.parse(rawU);
+        if (saved && typeof saved === 'object'){
+          /* Replace USERS with saved snapshot */
+          Object.keys(USERS).forEach(k => delete USERS[k]);
+          Object.assign(USERS, saved);
+        }
+      } catch(_){}
+    }
+    /* Always ensure OWNER bootstrap exists, no matter what's in storage. */
+    if (!USERS[BOOTSTRAP_ADMIN_ID]){
+      USERS[BOOTSTRAP_ADMIN_ID] = {
+        userId: BOOTSTRAP_ADMIN_ID,
+        displayName: 'Maverick 小猴',
+        ic: 'M', cl: '#4A6B8A',
+        status: STATUS.OWNER,
+        createdAt: '2026-04-30',
+        ntrp: '—', playCount: 0, strengths: []
+      };
+    } else if (USERS[BOOTSTRAP_ADMIN_ID].status !== STATUS.OWNER){
+      USERS[BOOTSTRAP_ADMIN_ID].status = STATUS.OWNER;
+    }
+
+    /* Daily reset: if scheduleDate is missing or stale, wipe courts. */
+    const today = todayISO();
+    const savedDate = safeGet(STORAGE_KEYS.SCHEDULE);
+    const rawC = safeGet(STORAGE_KEYS.COURTS);
+    if (savedDate === today && rawC){
+      try {
+        const saved = JSON.parse(rawC);
+        if (saved && typeof saved === 'object'){
+          ['A','B'].forEach(c => {
+            if (saved[c]) courts[c] = saved[c];
+            /* Backfill any missing time slots with empty open halves */
+            TIMES.forEach(t => {
+              if (!courts[c][t]) courts[c][t] = { top:{k:'open',p:[]}, bottom:{k:'open',p:[]} };
+            });
+          });
+        }
+      } catch(_){}
+    } else {
+      /* Either first run, or new day — start with empty courts. */
+      emptyCourtsForToday();
+    }
+    saveScheduleDate(today);
+    persist();
+  }
+
   async function boot(){
+    initFromStorage();
     refreshDemoBar();
     if (isLiffEnabled){
       /* Hide demo bar when running in real LIFF mode */
