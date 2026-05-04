@@ -3343,25 +3343,35 @@
     try { liff.login(); } catch(_){
       showLiffErrorScreen('LINE 登入逾期，無法自動續登', '請從 LINE 內重新開啟此應用');
     }
-  }
 
   async function initLiff(){
-    if (!isLiffEnabled) return false;
-    try {
-      await liff.init({ liffId: LIFF_ID });
-    } catch(e){
-      console.error('liff.init failed:', e);
-      if (isInvalidTokenError(e)){ reLoginAfterTokenError(); return false; }
-      showLiffErrorScreen('無法連線至 LINE 登入服務',
-        (e && (e.message || e.code)) || '請從 LINE app 內開啟此頁面，或稍後再試。');
-      return false;
-    }
+  if (!isLiffEnabled) return false;
+
+  try {
+    await liff.init({ liffId: LIFF_ID });
+  } catch(e){
+    console.error('liff.init failed:', e);
+    if (isInvalidTokenError(e)){ reLoginAfterTokenError(); return false; }
+    showLiffErrorScreen('無法連線至 LINE 登入服務',
+      (e && (e.message || e.code)) || '請從 LINE app 內開啟此頁面，或稍後再試。');
+    return false;
+  }
+
+  if (!liff.isLoggedIn()) {
+    liff.login();
+    return false;
+  }
+
+  const profile = await liff.getProfile();
+  handleLogin(profile.userId, profile.displayName, profile.pictureUrl);
+
+  return true;
+}
 
   function liffLogout(){
     if (isLiffEnabled && window.liff && liff.isLoggedIn()){
       try { liff.logout(); } catch(e){}
     }
-  }
 
   /* Full-screen error screen for unrecoverable LIFF failures */
   function showLiffErrorScreen(title, detail){
