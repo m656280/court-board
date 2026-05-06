@@ -3345,9 +3345,6 @@
     await liff.init({ liffId: LIFF_ID });
   } catch(e){
     console.error('liff.init failed:', e);
-    if (isInvalidTokenError(e)){ reLoginAfterTokenError(); return false; }
-    showLiffErrorScreen('無法連線至 LINE 登入服務',
-      (e && (e.message || e.code)) || '請從 LINE app 內開啟此頁面，或稍後再試。');
     return false;
   }
 
@@ -3356,12 +3353,18 @@
     return false;
   }
 
-  const profile = await liff.getProfile();
-  handleLogin(profile.userId, profile.displayName, profile.pictureUrl);
-
-  return true;
-}
-
+  try {
+    const profile = await liff.getProfile();
+    handleLogin(
+      profile.userId,
+      profile.displayName,
+      profile.pictureUrl
+    );
+    return true;
+  } catch(e){
+    console.error('liff.getProfile failed:', e);
+    return false;
+  }
   function liffLogout(){
     if (isLiffEnabled && window.liff && liff.isLoggedIn()){
       try { liff.logout(); } catch(e){}
@@ -3548,6 +3551,7 @@ const firebaseConfig = {
 };
 
 const LIFF_ID = "2009941241-ymtu2MdM";
+const isLiffEnabled = true;
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 boot();
