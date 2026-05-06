@@ -48,7 +48,6 @@
     min-height: 100dvh;
   }
 
-  /* DEMO BAR — remove in production LIFF deployment */
   .demo-bar {
     position: sticky; top: 0; z-index: 60;
     background: #1F2D26; color: #C9DBC9;
@@ -73,7 +72,6 @@
   .demo-bar .who { margin-left: auto; opacity: .7; font-size: 10px; }
   .demo-bar button:hover { background: rgba(255,255,255,.14); }
 
-  /* GENERIC SCREEN WRAPPER */
   .cb {
     max-width: 480px;
     margin: 0 auto;
@@ -89,7 +87,6 @@
   }
   .screen.active { display: block; }
 
-  /* LOGIN SCREEN */
   .login-wrap {
     max-width: 360px; margin: 0 auto;
     padding: 80px 24px 40px;
@@ -131,7 +128,6 @@
     font-size: 10px; color: var(--ink-mute); margin-top: 18px; line-height: 1.6;
   }
 
-  /* PENDING / BLOCKED SCREEN */
   .status-screen {
     max-width: 380px; margin: 0 auto;
     padding: 60px 24px 40px;
@@ -168,7 +164,6 @@
     color: var(--blue); text-decoration: none; font-weight: 500;
   }
 
-  /* APP HEADER */
   .cb-top {
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 2px; gap: 8px;
@@ -193,7 +188,6 @@
     font-weight: 700;
   }
   .cb-admin-btn:hover { background: #3F5C77; }
-  /* Pulse + amber accent when there are pending members waiting. */
   .cb-admin-btn.has-pending {
     background: linear-gradient(135deg, var(--blue) 0%, var(--amber) 130%);
     box-shadow: 0 0 0 0 rgba(200,137,58,.5);
@@ -304,8 +298,6 @@
   .cb-net::before { top: -1px; }
   .cb-net::after { bottom: -1px; }
 
-  /* Booking halves are HORIZONTAL strips: top (front / net side) and bottom (back / baseline side).
-     Coach occupies one whole strip; regular doubles still positions players left/right within a strip. */
   .cb-half { position: absolute; left: 0; right: 0; height: 50%; z-index: 1; }
   .cb-half.top    { top: 0; }
   .cb-half.bottom { bottom: 0; }
@@ -349,8 +341,6 @@
     box-shadow: inset 0 0 0 0.5px rgba(255,255,255,.25);
     position: relative; overflow: hidden;
   }
-  /* LINE pictureUrl overlay — image is removed via onerror when it 404s,
-     letting the underlying initial-char + color circle show through. */
   .cb-pill .av img,
   .cb-me  .av img,
   .cb-sheet .a img,
@@ -376,7 +366,6 @@
   .cb-pill.is-mine .av { background: #FFF !important; color: var(--blue) !important; }
   .cb-pill.is-mine .st { background: #DCE5EE; }
 
-  /* Replaceable second-consecutive booking — visible but soft, with dashed outline */
   .cb-pill.replaceable {
     background: rgba(40,55,45,.42);
     border: 1px dashed rgba(255,255,255,.45);
@@ -441,7 +430,6 @@
     letter-spacing: .04em;
   }
 
-  /* Court roster — explicit player list under each court for the active time. */
   .cb-roster {
     margin-top: 10px;
     padding: 8px 4px 4px;
@@ -582,7 +570,6 @@
     font-size: 12px; line-height: 16px; font-weight: 600;
   }
 
-  /* OVERLAY / SHEET */
   .cb-overlay {
     position: fixed; inset: 0;
     background: rgba(45,61,52,.45);
@@ -654,7 +641,6 @@
   .cb-sheet button.act.amber { background: var(--amber); }
   .cb-sheet button.act:disabled { opacity: .4; cursor: not-allowed; }
 
-  /* Profile stats — NTRP / 出席次數 */
   .cb-sheet .stats { display: flex; gap: 8px; margin-top: 14px; }
   .cb-sheet .stat {
     flex: 1; background: #F4ECDA; border-radius: 8px; padding: 10px 12px;
@@ -663,7 +649,6 @@
   .cb-sheet .stat .v { font-size: 16px; font-weight: 600; color: var(--ink); margin-top: 3px; letter-spacing: .01em; }
   .cb-sheet .stat .v.small { font-size: 12px; }
 
-  /* 擅長位置 tags */
   .cb-strengths {
     margin-top: 14px;
   }
@@ -690,7 +675,6 @@
     font-size: 11px; color: var(--ink-mute); font-style: italic;
   }
 
-  /* Self-edit panel (only the current user sees this on their own profile) */
   .cb-edit-profile {
     margin-top: 16px;
     border-top: 1px solid rgba(45,61,52,.1);
@@ -808,7 +792,6 @@
     font-style: italic;
   }
 
-  /* COACH-SESSION FORM (admin) */
   .form-row { margin-bottom: 12px; }
   .form-row label {
     display: block; font-size: 10px; color: var(--ink-soft);
@@ -875,7 +858,6 @@
   }
   .form-actions button:disabled { opacity: .4; cursor: not-allowed; }
 
-  /* ADMIN MASTER PANEL */
   .admin-tabs {
     display: flex; gap: 4px;
     margin-top: 10px; margin-bottom: 12px;
@@ -937,7 +919,6 @@
   }
   .add-coach-cta:hover { background: #1F2D26; }
 
-  /* ====== ADMIN PANEL — premium stats / ranking / settings ====== */
   .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1123,7 +1104,6 @@
     background: rgba(45,61,52,.15); cursor: not-allowed;
   }
 
-  /* Wider sheet for admin panel on tablet+ */
   @media (min-width: 720px) {
     .stats-grid { grid-template-columns: repeat(4, 1fr); }
   }
@@ -1149,7 +1129,6 @@
   .cb-toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
   .cb-toast.warn { background: var(--red); }
 
-  /* RESPONSIVE */
   @media (min-width: 720px) {
     .cb { max-width: 1080px; padding-bottom: 130px; }
     .cb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -1201,14 +1180,12 @@
     <h2>會員審核中</h2>
     <p>您的會員資格尚待管理員審核，通過後才能使用掛牌功能。</p>
     <p class="en">Your membership is pending approval.<br>Please wait for an administrator to approve your account.</p>
-
     <div class="meta-card">
       <div class="meta-row"><span class="k">LINE userId</span><span class="v" id="pending-uid">—</span></div>
       <div class="meta-row"><span class="k">顯示名稱</span><span class="v" id="pending-name">—</span></div>
       <div class="meta-row"><span class="k">申請時間</span><span class="v" id="pending-time">—</span></div>
       <div class="meta-row"><span class="k">狀態</span><span class="v"><span class="badge pending">PENDING</span></span></div>
     </div>
-
     <p class="small-action">如有疑問，請聯繫管理員</p>
   </div>
 </div>
@@ -1224,7 +1201,6 @@
     <h2>帳號已被封鎖</h2>
     <p>您的帳號已被管理員封鎖，目前無法使用本系統。<br>如有疑問，請聯繫管理員協助處理。</p>
     <p class="en">Your account has been blocked.<br>Please contact an administrator for assistance.</p>
-
     <div class="meta-card">
       <div class="meta-row"><span class="k">LINE userId</span><span class="v" id="blocked-uid">—</span></div>
       <div class="meta-row"><span class="k">狀態</span><span class="v"><span class="badge blocked">BLOCKED</span></span></div>
@@ -1234,7 +1210,6 @@
 
 <div class="screen" id="screen-app">
   <div class="cb">
-
     <div class="cb-top">
       <div class="cb-brand"><span>COURT BOARD</span><span class="d"></span></div>
       <div class="cb-actions">
@@ -1258,7 +1233,6 @@
     </div>
 
     <div class="cb-grid">
-
       <div class="cb-card">
         <div class="cb-info">
           <div class="lab">COURT</div>
@@ -1300,7 +1274,6 @@
         <div class="cb-roster" id="roster-B"></div>
         <div class="cb-slots" id="slots-B"></div>
       </div>
-
     </div>
 
     <div class="cb-legend">
@@ -1311,7 +1284,6 @@
       <span><i class="r"></i>可被替補</span>
       <span><i class="e"></i>已結束</span>
     </div>
-
   </div>
 
   <div class="cb-cta">
@@ -1330,15 +1302,8 @@
 
   /* ============================================================
      LIFF CONFIG
-     - LIFF_ID is the production LINE LIFF App ID.
-     - LIFF requires HTTPS; we silently fall back to demo mode on
-       file:// or localhost so local previews still work.
-     - When deployed to Vercel (HTTPS), LIFF mode activates.
   ============================================================ */
   const LIFF_ID = "2009941241-ymtu2MdM";
-  const PLACEHOLDER_LIFF_ID = "YOUR_LIFF_ID_HERE";
-  const isHttps     = location.protocol === 'https:';
-  const isLocalhost = /^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/.test(location.hostname);
   const isLiffEnabled = true;
 
   /* ============================================================
@@ -1346,14 +1311,10 @@
   ============================================================ */
   const MAX_ADMINS = 5;
   const MAX_STUDENTS = 4;
-  /* Bootstrap admin: real LINE userId that must always have ADMIN status,
-     never fall into PENDING or BLOCKED, and route directly to the app. */
   const BOOTSTRAP_ADMIN_ID = 'Ub1cc54fbbecfcea070a29ce8762fb05b';
 
   /* ============================================================
-     STORAGE LAYER — frontend prototype, backed by localStorage.
-     When migrating to Firebase/Supabase later, only these helpers
-     and applyDailyReset() need to change.
+     STORAGE LAYER
   ============================================================ */
   const STORAGE_KEYS = {
     USERS:    'cb.users.v1',
@@ -1377,13 +1338,12 @@
     safeSet(STORAGE_KEYS.SCHEDULE, d);
   }
   function persist(){
-  saveUsers();
-  saveCourts();
-
-  db.collection("courts").doc("main").set({
-    data: courts
-  });
-}
+    saveUsers();
+    saveCourts();
+    try {
+      db.collection("courts").doc("main").set({ data: courts });
+    } catch(_){}
+  }
 
   /* ============================================================
      DATE HELPERS
@@ -1402,6 +1362,7 @@
     const wk = ['日','一','二','三','四','五','六'][d.getDay()];
     return y + '/' + m + '/' + dd + ' 週' + wk;
   }
+
   const STATUS = {
     PENDING: 'pending',
     MEMBER:  'member',
@@ -1411,7 +1372,6 @@
     BLOCKED: 'blocked'
   };
 
-  /* Strength tag dictionary — Chinese label ↔ English meaning */
   const STRENGTH_INFO = {
     '右邊': 'Forehand side',
     '左邊': 'Backhand side',
@@ -1421,8 +1381,7 @@
   const STRENGTH_KEYS = Object.keys(STRENGTH_INFO);
 
   /* ============================================================
-     USER STORE — keyed by LINE userId
-     ntrp / playCount / strengths replace the old win-rate model.
+     USER STORE
   ============================================================ */
   const USERS = {
     'U0000000001': { userId:'U0000000001', displayName:'Jacky',     ic:'我', cl:'#4A6B8A', status:STATUS.ADMIN,   createdAt:'2026-01-01', ntrp:'4.0', playCount:38, strengths:['右邊','後面'] },
@@ -1440,19 +1399,16 @@
     'U0000000013': { userId:'U0000000013', displayName:'新人 Nora',  ic:'N', cl:'#A8A89C', status:STATUS.PENDING, createdAt:'2026-04-25', ntrp:'—',   playCount:0,  strengths:[] },
     'U0000000014': { userId:'U0000000014', displayName:'新人 Owen',  ic:'O', cl:'#9C8A78', status:STATUS.PENDING, createdAt:'2026-04-26', ntrp:'—',   playCount:0,  strengths:[] },
     'U0000000015': { userId:'U0000000015', displayName:'被封鎖者',    ic:'X', cl:'#888888', status:STATUS.BLOCKED, createdAt:'2026-03-10', ntrp:'2.5', playCount:3,  strengths:[] },
-    /* Real LINE userId — bootstrap admin. handleLogin() will refresh
-       displayName / pictureUrl on every LIFF login but preserve status. */
     'Ub1cc54fbbecfcea070a29ce8762fb05b': { userId:'Ub1cc54fbbecfcea070a29ce8762fb05b', displayName:'Maverick 小猴', ic:'M', cl:'#4A6B8A', status:STATUS.OWNER, createdAt:'2026-04-30', ntrp:'—', playCount:0, strengths:[] }
   };
 
   let currentUserId = 'U0000000001';
 
   /* ============================================================
-     HELPERS — status checks, role math
+     HELPERS
   ============================================================ */
   function getUser(id) { return USERS[id]; }
   function me() { return getUser(currentUserId); }
-  /* OWNER inherits all ADMIN powers, so isAdmin() returns true for both. */
   function isAdmin() {
     const u = me();
     return u && (u.status === STATUS.ADMIN || u.status === STATUS.OWNER);
@@ -1462,7 +1418,6 @@
     return !!(u && u.status === STATUS.OWNER);
   }
   function isCoach(uid) { const u = getUser(uid); return u && u.status === STATUS.COACH; }
-  /* OWNER inheritance — OWNER counts as ADMIN AND as COACH for any "-Like" check. */
   function isAdminLike(uid){
     const u = uid ? getUser(uid) : me();
     return !!(u && (u.status === STATUS.ADMIN || u.status === STATUS.OWNER));
@@ -1476,7 +1431,6 @@
     return u && (u.status === STATUS.MEMBER || u.status === STATUS.COACH ||
                  u.status === STATUS.ADMIN  || u.status === STATUS.OWNER);
   }
-  /* Status-specific reject message — used by booking actions */
   function bookingRejectMessage(){
     const u = me();
     if (!u) return '請先登入';
@@ -1484,7 +1438,6 @@
     if (u.status === STATUS.BLOCKED) return '帳號已被封鎖，無法使用此功能';
     return '需要會員權限';
   }
-  /* Number of ADMIN-status users (does NOT count OWNER — OWNER is separate). */
   function adminCount() {
     return Object.values(USERS).filter(u => u.status === STATUS.ADMIN).length;
   }
@@ -1507,10 +1460,7 @@
   }
 
   /* ============================================================
-     COURT DATA — halves are now { top, bottom } (horizontal split)
-     half = { k: 'open'|'full'|'mine'|'coach'|'coach-tail',
-              p: [uid...], replaceable?: [uid subset of p],
-              coach?: uid, dur?: 60, span?: '10:00 — 11:00' }
+     COURT DATA
   ============================================================ */
   const TIMES = [];
   for (let h = 6; h <= 18; h++){
@@ -1590,7 +1540,6 @@
   const meAv = document.getElementById('me-av');
   const meNm = document.getElementById('me-nm');
 
-  /* Two seats inside a horizontal strip — left and right */
   const seats = [
     { x: 28, y: 50 },
     { x: 72, y: 50 }
@@ -1615,7 +1564,6 @@
     if (!currentUserId){ showScreen('login'); return; }
     const u = me();
     if (!u){ showScreen('login'); currentUserId = null; return; }
-
     if (u.status === STATUS.PENDING){
       document.getElementById('pending-uid').textContent = u.userId;
       document.getElementById('pending-name').textContent = u.displayName;
@@ -1641,14 +1589,11 @@
     return ['top','bottom'].some(h => {
       const s = slot[h];
       if (!s) return false;
-      if (s.k === 'coach' || s.k === 'coach-tail') return false; /* coach booking handled separately */
+      if (s.k === 'coach' || s.k === 'coach-tail') return false;
       return (s.p || []).indexOf(uid) >= 0;
     });
   }
 
-  /* Same-court / same-time uniqueness:
-     A user can only appear once per (court, time). They MAY still book a
-     different court at the same time (cross-court bookings stay allowed). */
   function userOnSameCourtTime(uid, court, time){
     const slot = courts[court] && courts[court][time];
     if (!slot) return false;
@@ -1667,8 +1612,6 @@
     return n;
   }
 
-  /* A member's booking is "replaceable" if it's the second of a consecutive pair.
-     We compute on-the-fly from the half's `replaceable` array. */
   function isReplaceableEntry(half, uid){
     return half && half.replaceable && half.replaceable.indexOf(uid) >= 0;
   }
@@ -1680,8 +1623,6 @@
   /* ============================================================
      RENDER
   ============================================================ */
-  /* Avatar helper: returns optional <img> overlay that auto-removes on error.
-     The colored circle + initial char beneath remains as fallback. */
   function avPicHTML(u){
     if (u && u.pictureUrl){
       return '<img src="' + u.pictureUrl + '" alt="" onerror="this.remove()">';
@@ -1695,7 +1636,6 @@
     meAv.innerHTML = u.ic + avPicHTML(u);
     meNm.textContent = u.displayName;
 
-    /* Admin button visible for ADMIN AND OWNER; pending highlight when > 0. */
     if (isAdminLike()){
       adminBtn.style.display = 'inline-flex';
       const pn = pendingList().length;
@@ -1705,11 +1645,9 @@
       adminBtn.style.display = 'none';
     }
 
-    /* Member directory button visible to anyone who can use the system. */
     const dirBtn = document.getElementById('directory-open');
     if (dirBtn) dirBtn.style.display = canBook() ? 'inline-flex' : 'none';
 
-    /* Date label beside the title — refresh in case the day rolled over. */
     const dateEl = document.getElementById('cb-date');
     if (dateEl) dateEl.textContent = todayLabel();
 
@@ -1729,10 +1667,6 @@
                : u.status === STATUS.COACH ? '教練' : '會員';
     subEl.textContent = `${t} — ${addMin(t,30)} · ${role}模式`;
 
-    /* NOTE: do NOT close the overlay here. Closing should be done explicitly
-       by the action that finished (joinSeatAt, cancelMyBooking, etc.). When
-       the admin panel or profile sheet is open we want them to STAY open while
-       the underlying app re-renders. */
     persist();
   }
 
@@ -1777,7 +1711,6 @@
     el.classList.remove('full','mine');
     if (!data) return;
 
-    /* horizontal-strip label: TOP=前場/網前, BOTTOM=後場/底線 */
     const tag = document.createElement('span');
     tag.className = 'cb-half-tag';
     tag.textContent = context.side === 'top' ? '前場 · NET' : '後場 · BASELINE';
@@ -1829,8 +1762,6 @@
     }
   }
 
-  /* Court roster — explicit, easy-to-read list of who's on each half right now.
-     Tapping any avatar opens that user's profile sheet. */
   function renderRoster(courtKey){
     const wrap = document.getElementById('roster-' + courtKey);
     if (!wrap) return;
@@ -1923,7 +1854,7 @@
   }
 
   /* ============================================================
-     ADMIN ACTIONS — permission checks live here
+     ADMIN ACTIONS
   ============================================================ */
   function approveUser(uid){
     if (!isAdmin()) return showToast('需要管理員權限', true);
@@ -1938,7 +1869,7 @@
     if (!isAdmin()) return showToast('需要管理員權限', true);
     const u = getUser(uid);
     if (!u || u.status !== STATUS.PENDING) return;
-    if (u.status === STATUS.OWNER) return; /* defensive: OWNER never deletable */
+    if (u.status === STATUS.OWNER) return;
     delete USERS[uid];
     showToast(`已拒絕 ${u.displayName} 的申請`);
     rerenderAdminPanel(); renderApp();
@@ -1948,30 +1879,15 @@
     if (!isAdmin()) return showToast('需要管理員權限', true);
     const u = getUser(uid);
     if (!u) return false;
-
-    /* RULE 3: OWNER cannot be edited by anyone, ever. */
-    if (u.status === STATUS.OWNER){
-      showToast('OWNER 無法被變更', true); return false;
-    }
-    /* RULE: OWNER role cannot be assigned at runtime — bootstrap-only. */
-    if (newStatus === STATUS.OWNER){
-      showToast('OWNER 角色由系統指派，無法手動設定', true); return false;
-    }
-    /* RULES 4 + 7: only OWNER can promote to ADMIN or demote ADMIN. */
+    if (u.status === STATUS.OWNER){ showToast('OWNER 無法被變更', true); return false; }
+    if (newStatus === STATUS.OWNER){ showToast('OWNER 角色由系統指派，無法手動設定', true); return false; }
     if (newStatus === STATUS.ADMIN && u.status !== STATUS.ADMIN){
-      if (!isOwner()){
-        showToast('只有 OWNER 可以指派管理員', true); return false;
-      }
-      if (adminCount() >= MAX_ADMINS){
-        showToast(`已達管理員上限 (最多 ${MAX_ADMINS} 位)`, true); return false;
-      }
+      if (!isOwner()){ showToast('只有 OWNER 可以指派管理員', true); return false; }
+      if (adminCount() >= MAX_ADMINS){ showToast(`已達管理員上限 (最多 ${MAX_ADMINS} 位)`, true); return false; }
     }
     if (u.status === STATUS.ADMIN && newStatus !== STATUS.ADMIN){
-      if (!isOwner()){
-        showToast('只有 OWNER 可以變更管理員身份', true); return false;
-      }
+      if (!isOwner()){ showToast('只有 OWNER 可以變更管理員身份', true); return false; }
     }
-
     u.status = newStatus;
     showToast(`${u.displayName} 已設為 ${labelForStatus(newStatus)}`);
     rerenderAdminPanel(); renderApp();
@@ -1981,44 +1897,27 @@
   function blockUser(uid){
     if (!isAdmin()) return showToast('需要管理員權限', true);
     const u = getUser(uid); if (!u) return;
-
-    /* RULE 3: OWNER cannot be blocked. */
-    if (u.status === STATUS.OWNER){
-      showToast('OWNER 無法被封鎖', true); return;
-    }
-    /* RULE 7: ADMIN can only be blocked by OWNER. */
-    if (u.status === STATUS.ADMIN && !isOwner()){
-      showToast('只有 OWNER 可以封鎖管理員', true); return;
-    }
+    if (u.status === STATUS.OWNER){ showToast('OWNER 無法被封鎖', true); return; }
+    if (u.status === STATUS.ADMIN && !isOwner()){ showToast('只有 OWNER 可以封鎖管理員', true); return; }
     u.status = STATUS.BLOCKED;
     removeFromAllBookings(uid);
     showToast(`${u.displayName} 已封鎖`);
     rerenderAdminPanel(); renderApp();
   }
 
-  /* canDelete(targetUid):
-       - OWNER may delete anyone except OWNER (themselves)
-       - ADMIN may delete MEMBER / COACH / PENDING / BLOCKED
-       - ADMIN may NOT delete OWNER nor another ADMIN
-       - Cannot delete yourself */
   function canDelete(targetUid){
     if (!isAdminLike()) return false;
     const t = getUser(targetUid); if (!t) return false;
     if (targetUid === currentUserId) return false;
     if (t.status === STATUS.OWNER) return false;
     if (isOwner()) return true;
-    /* current is ADMIN (not OWNER) */
     return t.status !== STATUS.ADMIN;
   }
 
   function deleteUser(uid){
-    if (!canDelete(uid)){
-      showToast('無權限刪除這位使用者', true);
-      return;
-    }
+    if (!canDelete(uid)){ showToast('無權限刪除這位使用者', true); return; }
     const u = getUser(uid); if (!u) return;
     if (!confirm('確定要刪除這位會員？此操作無法復原。')) return;
-    /* Remove from all bookings + coach student lists, then drop from USERS. */
     removeFromAllBookings(uid);
     delete USERS[uid];
     persist();
@@ -2055,7 +1954,7 @@
         ['top','bottom'].forEach(k => {
           const half = slot[k]; if (!half || !half.p) return;
           if (half.k === 'coach' || half.k === 'coach-tail'){
-            half.p = half.p.filter(x => x !== uid); /* drop from student list */
+            half.p = half.p.filter(x => x !== uid);
             return;
           }
           half.p = half.p.filter(x => x !== uid);
@@ -2074,7 +1973,6 @@
     if (n >= 2) half.k = containsMe ? 'mine' : 'full';
     else half.k = containsMe ? 'mine' : 'open';
     if (!half.replaceable) half.replaceable = [];
-    /* drop replaceable entries that no longer exist in p */
     half.replaceable = half.replaceable.filter(x => half.p.indexOf(x) >= 0);
   }
 
@@ -2083,7 +1981,7 @@
   }
 
   /* ============================================================
-     PROFILE SHEET — NTRP / 出席次數 / 擅長位置
+     PROFILE SHEET
   ============================================================ */
   function strengthTagsHTML(strengths){
     if (!strengths || !strengths.length){
@@ -2119,8 +2017,6 @@
     sheet.classList.toggle('is-mine', mine);
     sheet.classList.remove('is-admin-panel','is-coach-form');
 
-    /* Local draft state — only used when viewing OWN profile.
-       Clones of u.ntrp / u.strengths so selection edits never touch USERS. */
     if (mine){
       sheet._draftNtrp = u.ntrp || '—';
       sheet._draftStrengths = (u.strengths || []).slice();
@@ -2142,11 +2038,9 @@
       actBtn = `<button class="act">加入</button>`;
     }
 
-    /* Initial char + optional LINE picture overlay (auto-removes on 404) */
     const avHTML = `<div class="a" style="${avatarBg(u, mine)}">${u.ic}${avPicHTML(u)}</div>`;
-
-    /* Members can't see LINE userId of others; only ADMIN/OWNER (or self) can. */
     const showUid = mine || isAdminLike();
+
     sheet.innerHTML = `
       <div class="grab"></div>
       <div class="row">
@@ -2173,27 +2067,16 @@
 
     const btn = sheet.querySelector('button.act');
     if (btn) btn.addEventListener('click', () => {
-      if (mine && context){
-        cancelMyBooking(context);
-      } else if (replaceableHere){
-        replaceBooking(context, uid);
-      } else if (!mine && context){
-        joinSeatAt(context);
-      }
+      if (mine && context){ cancelMyBooking(context); }
+      else if (replaceableHere){ replaceBooking(context, uid); }
+      else if (!mine && context){ joinSeatAt(context); }
     });
     if (mine) bindMyEditPanel();
     bindAdminButtons(u, context);
   }
 
-  /* ------- Self-edit panel: NTRP dropdown + strengths multi-select -------
-     Uses LOCAL DRAFT STATE per opening — selection only mutates the draft,
-     never the underlying USERS or any rendering outside this panel.
-     Save commits + persists + updates DOM in place (no full re-render).
-     Cancel discards the draft and closes the sheet. */
   const NTRP_OPTIONS = ['2.0','2.5','3.0','3.5','4.0','4.5','5.0+'];
 
-  /* Draft state lives on the sheet element so it survives between
-     handler calls but is reset whenever a new openProfile() runs. */
   function renderMyEditPanel(draftNtrp, draftStrengths){
     const ntrpHTML = NTRP_OPTIONS.map(v =>
       `<option value="${v}" ${draftNtrp === v ? 'selected' : ''}>${v}</option>`
@@ -2223,11 +2106,9 @@
   }
 
   function bindMyEditPanel(){
-    /* Strength tag toggle — pure local state mutation, NO re-render. */
     sheet.querySelectorAll('#my-strengths .strength-opt').forEach(btn => {
       btn.addEventListener('click', e => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         const key = btn.getAttribute('data-key');
         const i = sheet._draftStrengths.indexOf(key);
         if (i >= 0) sheet._draftStrengths.splice(i, 1);
@@ -2236,7 +2117,6 @@
       });
     });
 
-    /* NTRP select — pure local state mutation, no other side effects. */
     const ntrpSel = sheet.querySelector('#my-ntrp');
     if (ntrpSel){
       ntrpSel.addEventListener('change', e => {
@@ -2245,40 +2125,27 @@
       });
     }
 
-    /* Cancel — discard draft and close the sheet. */
     const cancel = sheet.querySelector('#cancel-profile');
     if (cancel){
       cancel.addEventListener('click', e => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         overlay.classList.remove('show');
       });
     }
 
-    /* Save — commit draft to USERS, persist, toast. Update read-only stats
-       in place via DOM, do NOT call openProfile/renderApp (which would
-       close the sheet because of the overlay-show toggle on app screen). */
     const save = sheet.querySelector('#save-profile');
     if (save){
       save.addEventListener('click', e => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         const u = USERS[currentUserId]; if (!u) return;
         u.ntrp = sheet._draftNtrp;
         u.strengths = sheet._draftStrengths.slice();
         persist();
         showToast('個人資料已更新');
-
-        /* In-place DOM patch: update the read-only NTRP value and tag list
-           without tearing down the sheet. */
         const ntrpVal = sheet.querySelector('.cb-sheet .stats .stat:first-child .v');
         if (ntrpVal) ntrpVal.textContent = u.ntrp || '—';
         const tagsBox = sheet.querySelector('.cb-strengths .tags');
         if (tagsBox) tagsBox.innerHTML = strengthTagsHTML(u.strengths);
-
-        /* If the app screen is rendered behind this overlay, refresh roster
-           in case strengths/NTRP show somewhere later — but do this AFTER
-           the sheet is updated, so the user sees the success state first. */
         if (screens.app.classList.contains('active')){
           ['A','B'].forEach(c => renderRoster(c));
         }
@@ -2289,8 +2156,6 @@
   function adminActionsForUser(u, context){
     if (!isAdmin()) return '';
     if (u.userId === currentUserId) return '';
-
-    /* OWNER target — completely locked, no actions for anyone */
     if (u.status === STATUS.OWNER){
       return `
         <div class="admin-panel">
@@ -2300,8 +2165,6 @@
         </div>
       `;
     }
-
-    /* ADMIN target — only OWNER can change them */
     if (u.status === STATUS.ADMIN && !isOwner()){
       return `
         <div class="admin-panel">
@@ -2311,7 +2174,6 @@
         </div>
       `;
     }
-
     const adminFull = adminCount() >= MAX_ADMINS && u.status !== STATUS.ADMIN;
     const hint = adminFull ? `<span class="hint">已達管理員上限 (${MAX_ADMINS})</span>` : '';
     return `
@@ -2343,18 +2205,14 @@
       const act = btn.getAttribute('data-act');
       if (!act) return;
       btn.addEventListener('click', () => {
-        if (act === 'remove')  return removeFromBooking(u.userId, context);
-        if (act === 'block')   return blockUser(u.userId);
-        if (act === 'unblock') return unblockUser(u.userId);
-        if (act === 'role-member') return setStatus(u.userId, STATUS.MEMBER);
-        if (act === 'role-coach')  return setStatus(u.userId, STATUS.COACH);
-        if (act === 'role-admin')  return setStatus(u.userId, STATUS.ADMIN);
-        if (act === 'cancel-coach' && context){
-          cancelCoachSession(context);
-        }
-        if (act === 'add-student' && context){
-          openStudentPicker(context);
-        }
+        if (act === 'remove')       return removeFromBooking(u.userId, context);
+        if (act === 'block')        return blockUser(u.userId);
+        if (act === 'unblock')      return unblockUser(u.userId);
+        if (act === 'role-member')  return setStatus(u.userId, STATUS.MEMBER);
+        if (act === 'role-coach')   return setStatus(u.userId, STATUS.COACH);
+        if (act === 'role-admin')   return setStatus(u.userId, STATUS.ADMIN);
+        if (act === 'cancel-coach' && context){ cancelCoachSession(context); }
+        if (act === 'add-student' && context){ openStudentPicker(context); }
         if (act === 'remove-student'){
           const sid = btn.getAttribute('data-sid');
           removeStudentFromCoach(context, sid);
@@ -2364,7 +2222,7 @@
   }
 
   /* ============================================================
-     COACH SESSION — view + admin-only management
+     COACH SESSION
   ============================================================ */
   function openCoach(data, context){
     sheet.classList.remove('is-mine','is-admin-panel','is-coach-form');
@@ -2431,7 +2289,6 @@
     const head = courts[context.court][context.time];
     const sideHead = head[context.side];
     if (sideHead.k !== 'coach' && sideHead.k !== 'coach-tail') return;
-    /* Find the head time even if user clicked the tail */
     let headTime = context.time;
     if (sideHead.k === 'coach-tail') headTime = addMin(context.time, -30);
     const headSlot = courts[context.court][headTime];
@@ -2444,11 +2301,9 @@
       }
     });
     showToast('已移除學員');
-    /* Re-open the coach sheet with updated data */
     openCoach(headSlot[context.side], { ...context, time: headTime });
   }
 
-  /* ----- Student picker (admin add to existing session) ----- */
   function openStudentPicker(context){
     if (!isAdmin()) return;
     let headTime = context.time;
@@ -2510,7 +2365,6 @@
     refresh();
   }
 
-  /* ----- Add coach session (admin form) ----- */
   function openAddCoachSession(){
     if (!isAdmin()) return;
     sheet.classList.remove('is-mine','is-admin-panel');
@@ -2524,7 +2378,7 @@
       coachId: coaches[0] ? coaches[0].userId : '',
       students: []
     };
-    /* Time options that have BOTH t and t+30 free of coach */
+
     function timeOptions(){
       return TIMES.filter(t => {
         const next = addMin(t, 30);
@@ -2548,7 +2402,6 @@
         <div style="font-size:11px; color:var(--ink-soft); margin-bottom:14px;">
           僅限管理員 · 1 小時 · 最多 ${MAX_STUDENTS} 位學員
         </div>
-
         <div class="form-row">
           <label>球場</label>
           <div class="seg">
@@ -2556,7 +2409,6 @@
             <button data-court="B" class="${state.court==='B'?'active':''}">球場 B</button>
           </div>
         </div>
-
         <div class="form-row">
           <label>半場 (Half)</label>
           <div class="seg">
@@ -2564,14 +2416,12 @@
             <button data-side="bottom" class="${state.side==='bottom'?'active':''}">後場 / 底線</button>
           </div>
         </div>
-
         <div class="form-row">
           <label>教練</label>
           <select id="cf-coach">
             ${coaches.map(c => `<option value="${c.userId}" ${state.coachId===c.userId?'selected':''}>${c.displayName}</option>`).join('')}
           </select>
         </div>
-
         <div class="form-row">
           <label>開始時間</label>
           <select id="cf-time">
@@ -2580,7 +2430,6 @@
               : opts.map(t => `<option value="${t}" ${state.time===t?'selected':''}>${t} — ${addMin(t,30)} (1h)</option>`).join('')}
           </select>
         </div>
-
         <div class="form-row">
           <label>學員 (${state.students.length} / ${MAX_STUDENTS})</label>
           <div class="student-grid">
@@ -2591,7 +2440,6 @@
             `).join('')}
           </div>
         </div>
-
         <div class="form-actions">
           <button class="secondary" data-act="cancel">取消</button>
           <button class="primary" data-act="save" ${!state.time || !state.coachId ? 'disabled':''}>建立教練課</button>
@@ -2621,12 +2469,8 @@
           refresh();
         });
       });
-      sheet.querySelector('[data-act="cancel"]').addEventListener('click', () => {
-        openAdminPanel();
-      });
-      sheet.querySelector('[data-act="save"]').addEventListener('click', () => {
-        createCoachSession(state);
-      });
+      sheet.querySelector('[data-act="cancel"]').addEventListener('click', () => { openAdminPanel(); });
+      sheet.querySelector('[data-act="save"]').addEventListener('click', () => { createCoachSession(state); });
     }
 
     refresh();
@@ -2641,7 +2485,6 @@
     const head = courts[state.court][headTime];
     const tail = courts[state.court][tailTime];
     if (!head || !tail) return showToast('時段無效', true);
-    /* Wipe existing bookings on that half — admin override; warn-style toast */
     const wiped = (head[state.side].p || []).length + (tail[state.side].p || []).length;
     head[state.side] = {
       k:'coach', coach: state.coachId,
@@ -2660,17 +2503,14 @@
   }
 
   /* ============================================================
-     PUBLIC MEMBER DIRECTORY — accessible to ANY approved user.
-     Members see: avatar / displayName / role / NTRP / strengths.
-     Members do NOT see: pending users, blocked users, userId, admin actions.
-     ADMIN/OWNER use the existing admin panel for full controls. */
+     PUBLIC MEMBER DIRECTORY
+  ============================================================ */
   function openPublicDirectory(){
     if (!canBook()){ showToast(bookingRejectMessage(), true); return; }
     sheet.classList.remove('is-mine','is-admin-panel','is-coach-form');
     const adminLike = isAdminLike();
     const visible = Object.values(USERS).filter(u => {
       if (adminLike) return true;
-      /* Non-admin: only show approved (member/coach/admin/owner). */
       return u.status === STATUS.MEMBER || u.status === STATUS.COACH ||
              u.status === STATUS.ADMIN  || u.status === STATUS.OWNER;
     }).sort((a,b) => {
@@ -2719,10 +2559,9 @@
      ADMIN MASTER PANEL
   ============================================================ */
   let adminTab = 'pending';
+
   function openAdminPanel(){
     if (!isAdmin()) return;
-    /* If there's anything pending, force-open on the 待審核 tab so admins
-       see waiting members immediately. */
     if (pendingList().length > 0) adminTab = 'pending';
     sheet.classList.remove('is-mine','is-coach-form');
     sheet.classList.add('is-admin-panel');
@@ -2807,7 +2646,6 @@
       const youBadge = isMe ? '<span class="badge mine">YOU</span>' : '';
       const statusBadge = `<span class="badge ${u.status}">${labelForStatus(u.status)}</span>`;
 
-      /* OWNER row — read-only, no buttons for anyone */
       if (isOwn){
         return `
           <div class="user-row">
@@ -2821,7 +2659,6 @@
         `;
       }
 
-      /* ADMIN row when viewer is not OWNER — read-only with notice */
       if (isAdminTarget && !meIsOwner){
         return `
           <div class="user-row">
@@ -2835,7 +2672,6 @@
         `;
       }
 
-      /* Regular member / coach / blocked / admin-when-viewer-is-OWNER */
       const adminFull = adminFullGlobal && !isAdminTarget;
       return `
         <div class="user-row">
@@ -2863,7 +2699,6 @@
   }
 
   function renderCoachManagement(){
-    /* List existing coach sessions across both courts */
     const sessions = [];
     ['A','B'].forEach(c => {
       TIMES.forEach(t => {
@@ -2904,27 +2739,18 @@
   }
 
   /* ============================================================
-     ATTENDANCE STATS — derived metrics for the admin dashboard
+     ATTENDANCE STATS
   ============================================================ */
   function computeStats(){
     const playingStatuses = [STATUS.MEMBER, STATUS.COACH, STATUS.ADMIN, STATUS.OWNER];
     const playing = Object.values(USERS).filter(u => playingStatuses.indexOf(u.status) >= 0);
-
     const totalPlayCount = playing.reduce((s,u) => s + (u.playCount||0), 0);
     const sortedDesc = playing.slice().sort((a,b) => (b.playCount||0) - (a.playCount||0));
     const topActive = sortedDesc.slice(0, 5);
-    /* Low-attendance: members/coaches sorted ascending, top 5 — exclude OWNER/ADMIN
-       to surface members who actually need outreach. */
-    const attentionPool = playing.filter(u =>
-      u.status === STATUS.MEMBER || u.status === STATUS.COACH
-    );
-    const lowActive = attentionPool.slice()
-      .sort((a,b) => (a.playCount||0) - (b.playCount||0))
-      .slice(0, 5);
+    const attentionPool = playing.filter(u => u.status === STATUS.MEMBER || u.status === STATUS.COACH);
+    const lowActive = attentionPool.slice().sort((a,b) => (a.playCount||0) - (b.playCount||0)).slice(0, 5);
 
-    /* Coach sessions: count slots where k='coach' (head only, not tails). */
     let coachSessions = 0;
-    /* Current bookings on the demo board — proxy for "this month" in absence of a real calendar */
     let currentBookings = 0;
     ['A','B'].forEach(c => {
       Object.values(courts[c] || {}).forEach(slot => {
@@ -2938,18 +2764,12 @@
       });
     });
 
-    /* Synthesised "this month" attendance: sum of recent slice of playCount.
-       Lacking real history, we use ~25% of total as a reasonable monthly window. */
     const monthlyAttendance = Math.round(totalPlayCount * 0.25) + currentBookings;
 
     return {
-      totalPlayCount,
-      monthlyAttendance,
-      currentBookings,
-      coachSessions,
-      activeMembers: playing.length,
-      topActive,
-      lowActive,
+      totalPlayCount, monthlyAttendance, currentBookings,
+      coachSessions, activeMembers: playing.length,
+      topActive, lowActive,
       pendingCount: pendingList().length,
       blockedCount: Object.values(USERS).filter(u => u.status === STATUS.BLOCKED).length
     };
@@ -2977,62 +2797,34 @@
   function renderAttendanceStats(){
     const s = computeStats();
     const topMax = (s.topActive[0] && s.topActive[0].playCount) || 1;
-
     return `
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="label">總出席次數</div>
-          <div class="value">${s.totalPlayCount}</div>
-          <div class="delta">所有成員累計</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">本月出席</div>
-          <div class="value">${s.monthlyAttendance}</div>
-          <div class="delta up">▲ 含目前掛牌 ${s.currentBookings}</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">教練課場次</div>
-          <div class="value">${s.coachSessions}</div>
-          <div class="delta">已排定</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">活躍成員</div>
-          <div class="value">${s.activeMembers}</div>
-          <div class="delta">含教練/管理員</div>
-        </div>
+        <div class="stat-card"><div class="label">總出席次數</div><div class="value">${s.totalPlayCount}</div><div class="delta">所有成員累計</div></div>
+        <div class="stat-card"><div class="label">本月出席</div><div class="value">${s.monthlyAttendance}</div><div class="delta up">▲ 含目前掛牌 ${s.currentBookings}</div></div>
+        <div class="stat-card"><div class="label">教練課場次</div><div class="value">${s.coachSessions}</div><div class="delta">已排定</div></div>
+        <div class="stat-card"><div class="label">活躍成員</div><div class="value">${s.activeMembers}</div><div class="delta">含教練/管理員</div></div>
       </div>
-
       <div class="rank-list">
         <div class="title"><span>最活躍成員 · TOP 5</span><span class="hint">total play count</span></div>
         ${ s.topActive.length === 0
           ? `<div class="empty-state" style="padding:14px 0;">尚無資料</div>`
           : s.topActive.map((u,i) => rankRowHTML(u, i, { max: topMax })).join('') }
       </div>
-
       <div class="rank-list">
         <div class="title"><span>低出席成員 · 需鼓勵</span><span class="hint">play count ascending</span></div>
         ${ s.lowActive.length === 0
           ? `<div class="empty-state" style="padding:14px 0;">尚無資料</div>`
           : s.lowActive.map((u,i) => rankRowHTML(u, i, { max: topMax, barCls: 'amber' })).join('') }
       </div>
-
       <div class="stats-grid" style="margin-top:4px;">
-        <div class="stat-card">
-          <div class="label">待審核</div>
-          <div class="value">${s.pendingCount}</div>
-          <div class="delta">需要處理</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">封鎖名單</div>
-          <div class="value">${s.blockedCount}</div>
-          <div class="delta">無法使用系統</div>
-        </div>
+        <div class="stat-card"><div class="label">待審核</div><div class="value">${s.pendingCount}</div><div class="delta">需要處理</div></div>
+        <div class="stat-card"><div class="label">封鎖名單</div><div class="value">${s.blockedCount}</div><div class="delta">無法使用系統</div></div>
       </div>
     `;
   }
 
   /* ============================================================
-     ADMIN SETTINGS TAB — only OWNER can promote/demote admins
+     ADMIN SETTINGS
   ============================================================ */
   function renderAdminSettings(){
     const own = isOwner();
@@ -3043,7 +2835,7 @@
     );
     const slotLeft = Math.max(0, MAX_ADMINS - admins.length);
 
-    const ownersHTML = owners.map((u, i) => `
+    const ownersHTML = owners.map(u => `
       <div class="rank-row">
         <div class="rk top1">★</div>
         <div class="av" style="background:${u.cl}">${u.ic}${avPicHTML(u)}</div>
@@ -3067,28 +2859,17 @@
 
     return `
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="label">OWNER</div>
-          <div class="value">${owners.length}</div>
-          <div class="delta">系統擁有者</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">ADMIN ${admins.length}/${MAX_ADMINS}</div>
-          <div class="value">${slotLeft}</div>
-          <div class="delta">剩餘配額</div>
-        </div>
+        <div class="stat-card"><div class="label">OWNER</div><div class="value">${owners.length}</div><div class="delta">系統擁有者</div></div>
+        <div class="stat-card"><div class="label">ADMIN ${admins.length}/${MAX_ADMINS}</div><div class="value">${slotLeft}</div><div class="delta">剩餘配額</div></div>
       </div>
-
       <div class="rank-list">
         <div class="title"><span>OWNER · 系統擁有者</span><span class="hint">不可變更</span></div>
         ${ownersHTML}
       </div>
-
       <div class="rank-list">
         <div class="title"><span>ADMIN · 管理員 (${admins.length}/${MAX_ADMINS})</span><span class="hint">${own ? '可撤銷' : '唯讀'}</span></div>
         ${adminsHTML}
       </div>
-
       ${ own
         ? `<div class="promote-form">
             <div class="ttl"><span>升級為管理員</span><span class="hint" style="font-size:9px; color:var(--ink-mute); letter-spacing:.04em;">剩餘 ${slotLeft} 位</span></div>
@@ -3115,20 +2896,20 @@
       b.addEventListener('click', () => {
         const act = b.getAttribute('data-act');
         const uid = b.getAttribute('data-uid');
-        if (act === 'approve') return approveUser(uid);
-        if (act === 'reject')  return rejectUser(uid);
-        if (act === 'block')   return blockUser(uid);
-        if (act === 'unblock') return unblockUser(uid);
-        if (act === 'delete')  return deleteUser(uid);
-        if (act === 'role-member') return setStatus(uid, STATUS.MEMBER);
-        if (act === 'role-coach')  return setStatus(uid, STATUS.COACH);
-        if (act === 'role-admin')  return setStatus(uid, STATUS.ADMIN);
+        if (act === 'approve')      return approveUser(uid);
+        if (act === 'reject')       return rejectUser(uid);
+        if (act === 'block')        return blockUser(uid);
+        if (act === 'unblock')      return unblockUser(uid);
+        if (act === 'delete')       return deleteUser(uid);
+        if (act === 'role-member')  return setStatus(uid, STATUS.MEMBER);
+        if (act === 'role-coach')   return setStatus(uid, STATUS.COACH);
+        if (act === 'role-admin')   return setStatus(uid, STATUS.ADMIN);
         if (act === 'promote-admin'){
           const sel = sheet.querySelector('#promote-pick');
           if (!sel || !sel.value){ showToast('請先選擇成員', true); return; }
           return setStatus(sel.value, STATUS.ADMIN);
         }
-        if (act === 'add-coach')   return openAddCoachSession();
+        if (act === 'add-coach')    return openAddCoachSession();
         if (act === 'open-coach'){
           const c = b.getAttribute('data-court'),
                 t = b.getAttribute('data-time'),
@@ -3151,22 +2932,15 @@
   }
 
   /* ============================================================
-     QUICK BOOK / JOIN — booking rules enforced here
-     - max 2 consecutive 30-min slots (so 3-in-a-row is blocked)
-     - second consecutive slot is "replaceable"
-     - if a target half is full of replaceable players AND the booker
-       has no adjacent booking, allow replace
+     BOOKING ACTIONS
   ============================================================ */
   function joinSeat(context){
-    /* Convenience: if context provided, target it; else find any open seat at active time */
     if (!canBook()){ showToast(bookingRejectMessage(), true); return; }
     if (context && context.court) return joinSeatAt(context);
     const t = TIMES[activeIdx];
     let found = null;
     ['A','B'].forEach(c => {
       if (found) return;
-      /* Same-court / same-time uniqueness: skip this whole court if user
-         already has a slot on top OR bottom of this court at this time. */
       if (userOnSameCourtTime(currentUserId, c, t)) return;
       const slot = courts[c][t];
       ['top','bottom'].forEach(k => {
@@ -3188,24 +2962,14 @@
     const slot = courts[ctx.court][ctx.time];
     const half = slot[ctx.side];
     if (!half) return;
-    if (half.k === 'coach' || half.k === 'coach-tail'){
-      showToast('教練課時段', true); return;
-    }
-    if ((half.p || []).indexOf(currentUserId) >= 0){
-      showToast('你已在此預約', true); return;
-    }
-    /* Same-court / same-time uniqueness: block if already on the OTHER half
-       of the same court at the same time. Cross-court bookings stay allowed. */
+    if (half.k === 'coach' || half.k === 'coach-tail'){ showToast('教練課時段', true); return; }
+    if ((half.p || []).indexOf(currentUserId) >= 0){ showToast('你已在此預約', true); return; }
     const otherSide = ctx.side === 'top' ? 'bottom' : 'top';
     const other = slot[otherSide];
     if (other && (other.p || []).indexOf(currentUserId) >= 0){
-      showToast('同一時段同一球場只能掛牌一次', true);
-      return;
+      showToast('同一時段同一球場只能掛牌一次', true); return;
     }
-
     const adj = adjacentBookingCount(currentUserId, ctx.court, ctx.time);
-
-    /* If full and not replaceable → blocked. If has replaceable → handled separately. */
     if ((half.p || []).length >= 2){
       if (halfHasReplaceable(half) && adj === 0){
         const target = half.replaceable[0];
@@ -3213,11 +2977,7 @@
       }
       showToast('此半場已滿', true); return;
     }
-
-    /* Consecutive-slot rule: max 2 consecutive */
-    if (adj >= 2){
-      showToast('不可連續超過 2 個時段', true); return;
-    }
+    if (adj >= 2){ showToast('不可連續超過 2 個時段', true); return; }
     half.p = (half.p || []).concat([currentUserId]);
     if (adj === 1){
       half.replaceable = (half.replaceable || []).concat([currentUserId]);
@@ -3234,20 +2994,14 @@
     if (!canBook()){ showToast(bookingRejectMessage(), true); return; }
     const slot = courts[ctx.court][ctx.time];
     const half = slot[ctx.side];
-    if (!half || !isReplaceableEntry(half, targetUid)){
-      showToast('此預約無法被替補', true); return;
-    }
-    /* Same-court / same-time uniqueness still applies to replacements */
+    if (!half || !isReplaceableEntry(half, targetUid)){ showToast('此預約無法被替補', true); return; }
     const otherSide = ctx.side === 'top' ? 'bottom' : 'top';
     const other = slot[otherSide];
     if (other && (other.p || []).indexOf(currentUserId) >= 0){
-      showToast('同一時段同一球場只能掛牌一次', true);
-      return;
+      showToast('同一時段同一球場只能掛牌一次', true); return;
     }
     const adj = adjacentBookingCount(currentUserId, ctx.court, ctx.time);
-    if (adj > 0){
-      showToast('替補者不能在相鄰時段已有預約', true); return;
-    }
+    if (adj > 0){ showToast('替補者不能在相鄰時段已有預約', true); return; }
     half.p = (half.p || []).map(x => x === targetUid ? currentUserId : x);
     half.replaceable = (half.replaceable || []).filter(x => x !== targetUid);
     normalizeHalfState(half);
@@ -3269,26 +3023,19 @@
   }
 
   /* ============================================================
-     LINE LIFF LOGIN
-     - When LIFF_ID is set, use real LINE login.
-     - When LIFF_ID is the placeholder, fall back to demo mode.
+     LIFF / LOGIN
   ============================================================ */
   function handleLogin(userId, displayName, pictureUrl){
-    /* Bootstrap admin: always ADMIN, never PENDING, never BLOCKED.
-       This branch runs first so the regular pending flow can't touch them. */
     if (userId === BOOTSTRAP_ADMIN_ID) {
       if (!USERS[userId]) {
         USERS[userId] = {
           userId,
           displayName: displayName || 'Maverick 小猴',
-          ic: 'M',
-          cl: '#4A6B8A',
+          ic: 'M', cl: '#4A6B8A',
           pictureUrl: pictureUrl || null,
           status: STATUS.OWNER,
           createdAt: '2026-04-30',
-          ntrp: '—',
-          playCount: 0,
-          strengths: []
+          ntrp: '—', playCount: 0, strengths: []
         };
       } else {
         USERS[userId].status = STATUS.OWNER;
@@ -3301,7 +3048,6 @@
       return;
     }
 
-    /* Regular flow: first login → PENDING; subsequent logins → refresh profile. */
     const isFirstLogin = !USERS[userId];
     if (isFirstLogin){
       USERS[userId] = {
@@ -3326,53 +3072,44 @@
     route();
   }
 
-  function isInvalidTokenError(e){
-    if (!e) return false;
-    if (e.code === 'INVALID_ID_TOKEN') return true;
-    return /INVALID_ID_TOKEN/i.test(e.message || String(e));
-  }
+  /* ---- 修正後的三個函式 ---- */
 
   function reLoginAfterTokenError(){
     try { liff.logout(); } catch(_){}
     try { liff.login(); } catch(_){
       showLiffErrorScreen('LINE 登入逾期，無法自動續登', '請從 LINE 內重新開啟此應用');
     }
+  }  /* ← 原本這個 } 不見了 */
 
   async function initLiff(){
-  if (!isLiffEnabled) return false;
+    if (!isLiffEnabled) return false;
+    try {
+      await liff.init({ liffId: LIFF_ID });
+    } catch(e){
+      console.error('liff.init failed:', e);
+      return false;
+    }
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return false;
+    }
+    try {
+      const profile = await liff.getProfile();
+      handleLogin(profile.userId, profile.displayName, profile.pictureUrl);
+      return true;
+    } catch(e){
+      console.error('liff.getProfile failed:', e);
+      return false;
+    }
+  }  /* ← 原本這個 } 不見了，且 liffLogout 被包在裡面 */
 
-  try {
-    await liff.init({ liffId: LIFF_ID });
-  } catch(e){
-    console.error('liff.init failed:', e);
-    return false;
-  }
-
-  if (!liff.isLoggedIn()) {
-    liff.login();
-    return false;
-  }
-
-  try {
-    const profile = await liff.getProfile();
-    handleLogin(
-      profile.userId,
-      profile.displayName,
-      profile.pictureUrl
-    );
-    return true;
-  } catch(e){
-    console.error('liff.getProfile failed:', e);
-    return false;
-  }
   function liffLogout(){
     if (isLiffEnabled && window.liff && liff.isLoggedIn()){
       try { liff.logout(); } catch(e){}
     }
+  }  /* ← 原本這個 } 不見了 */
 
-  /* Full-screen error screen for unrecoverable LIFF failures */
   function showLiffErrorScreen(title, detail){
-    /* If already shown, just update */
     let host = document.getElementById('liff-error');
     if (!host){
       host = document.createElement('div');
@@ -3391,8 +3128,6 @@
     document.getElementById('liff-retry').addEventListener('click', () => location.reload());
   }
 
-  /* Demo-only: triggered by the LINE button on the login screen
-     when LIFF_ID hasn't been set. */
   function simulateLineLogin(){
     if (isLiffEnabled){
       liff.login();
@@ -3467,8 +3202,6 @@
      INIT
   ============================================================ */
   function emptyCourtsForToday(){
-    /* Wipe all bookings and coach sessions for the new day,
-       keeping users / roles / profiles / NTRP / playCount intact. */
     ['A','B'].forEach(c => {
       courts[c] = {};
       TIMES.forEach(t => { courts[c][t] = { top:{k:'open',p:[]}, bottom:{k:'open',p:[]} }; });
@@ -3476,19 +3209,16 @@
   }
 
   function initFromStorage(){
-    /* USERS — restore if saved, otherwise keep seed defaults. */
     const rawU = safeGet(STORAGE_KEYS.USERS);
     if (rawU){
       try {
         const saved = JSON.parse(rawU);
         if (saved && typeof saved === 'object'){
-          /* Replace USERS with saved snapshot */
           Object.keys(USERS).forEach(k => delete USERS[k]);
           Object.assign(USERS, saved);
         }
       } catch(_){}
     }
-    /* Always ensure OWNER bootstrap exists, no matter what's in storage. */
     if (!USERS[BOOTSTRAP_ADMIN_ID]){
       USERS[BOOTSTRAP_ADMIN_ID] = {
         userId: BOOTSTRAP_ADMIN_ID,
@@ -3502,7 +3232,6 @@
       USERS[BOOTSTRAP_ADMIN_ID].status = STATUS.OWNER;
     }
 
-    /* Daily reset: if scheduleDate is missing or stale, wipe courts. */
     const today = todayISO();
     const savedDate = safeGet(STORAGE_KEYS.SCHEDULE);
     const rawC = safeGet(STORAGE_KEYS.COURTS);
@@ -3512,7 +3241,6 @@
         if (saved && typeof saved === 'object'){
           ['A','B'].forEach(c => {
             if (saved[c]) courts[c] = saved[c];
-            /* Backfill any missing time slots with empty open halves */
             TIMES.forEach(t => {
               if (!courts[c][t]) courts[c][t] = { top:{k:'open',p:[]}, bottom:{k:'open',p:[]} };
             });
@@ -3520,7 +3248,6 @@
         }
       } catch(_){}
     } else {
-      /* Either first run, or new day — start with empty courts. */
       emptyCourtsForToday();
     }
     saveScheduleDate(today);
@@ -3531,29 +3258,32 @@
     initFromStorage();
     refreshDemoBar();
     if (isLiffEnabled){
-      /* Hide demo bar when running in real LIFF mode */
       const bar = document.querySelector('.demo-bar');
       if (bar) bar.style.display = 'none';
       const ok = await initLiff();
-      if (ok) return; /* handleLogin already called route() */
+      if (ok) return;
     }
-    /* Demo fallback */
     route();
   }
-// 🔥 Firebase 初始化
-const firebaseConfig = {
-  apiKey: "AIzaSyBrqZAvkN57jGx5LNOMtquWzK3YQ1QLFQ",
-  authDomain: "court-board-c1e29.firebaseapp.com",
-  projectId: "court-board-c1e29",
-  storageBucket: "court-board-c1e29.firebasestorage.app",
-  messagingSenderId: "337148491014",
-  appId: "1:337148491014:web:33cab9162b64afad045a87"
-};
 
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-boot();
+  /* ============================================================
+     FIREBASE 初始化
+  ============================================================ */
+  const firebaseConfig = {
+    apiKey: "AIzaSyBrqZAvkN57jGx5LNOMtquWzK3YQ1QLFQ",
+    authDomain: "court-board-c1e29.firebaseapp.com",
+    projectId: "court-board-c1e29",
+    storageBucket: "court-board-c1e29.firebasestorage.app",
+    messagingSenderId: "337148491014",
+    appId: "1:337148491014:web:33cab9162b64afad045a87"
+  };
 
+  const firebaseApp = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  boot();
+
+})();
 </script>
 </body>
 </html>
