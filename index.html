@@ -1339,13 +1339,7 @@
   const PLACEHOLDER_LIFF_ID = "YOUR_LIFF_ID_HERE";
   const isHttps     = location.protocol === 'https:';
   const isLocalhost = /^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/.test(location.hostname);
-  const isLiffEnabled = !!(
-    window.liff &&
-    LIFF_ID &&
-    LIFF_ID !== PLACEHOLDER_LIFF_ID &&
-    isHttps &&
-    !isLocalhost
-  );
+  const isLiffEnabled = true;
 
   /* ============================================================
      CONSTANTS
