@@ -101,16 +101,74 @@
     saveUsers();
     saveCourts();
     saveAttendance();
-    /* Firestore: per-document writes for users (see saveUserToFirestore /
-       deleteUserFromFirestore — called explicitly at every user mutation
-       point). courts/attendance still use single-doc snapshot for now. */
-    try { db.collection("courts").doc("main").set({ data: courts }); } catch(_){}
-    try {
-      db.collection("attendance").doc("snapshot").set({
-        data: [...attendanceRecords],
-        bookers: attendanceBookers
+    /* Firestore syncs are gated + diff-checked separately:
+       - users: per-doc, called explicitly at user mutation points
+       - courts/attendance: see saveCourtsToFirestoreIfChanged /
+         saveAttendanceToFirestoreIfChanged below. We DO NOT write them
+         from persist() because persist() is called from many places
+         (including initFromStorage and onSnapshot callbacks) where a
+         stale-local-overwrites-remote race would corrupt cloud state. */
+    saveCourtsToFirestoreIfChanged();
+    saveAttendanceToFirestoreIfChanged();
+  }
+
+  /* ============================================================
+     COURTS FIRESTORE WRITE — race-safe, observable.
+     Three gates:
+       (1) db must be initialised
+       (2) onSnapshot must have fired at least once (we know cloud state)
+       (3) local payload must differ from both last-write and last-remote
+     This eliminates the boot-time stale-overwrite race where two devices
+     overwrote each other's bookings via /courts/main snapshot writes.
+  ============================================================ */
+  let _courtsListenerFired = false;
+  let _lastCourtsWrittenJson = '';
+  function saveCourtsToFirestoreIfChanged(){
+    if (typeof db === 'undefined' || !db || !db.collection){
+      console.warn('[firestore] db not ready, skipping courts write');
+      return;
+    }
+    if (!_courtsListenerFired){
+      console.warn('[firestore] courts listener not hydrated yet, skipping write to avoid stale overwrite');
+      return;
+    }
+    const currentJson = JSON.stringify(courts);
+    /* Already matches remote → no-op (this is what kills the echo loop
+       when onSnapshot bounces our own write back to us). */
+    if (currentJson === _lastCourtsRemoteJson) return;
+    /* Already wrote this exact state → no-op (e.g. rapid re-renders). */
+    if (currentJson === _lastCourtsWrittenJson) return;
+    _lastCourtsWrittenJson = currentJson;
+    console.info('[firestore] write courts/main · ' + currentJson.length + ' chars');
+    db.collection('courts').doc('main').set({ data: courts })
+      .then(() => { console.info('[firestore] courts/main write OK'); })
+      .catch(err => {
+        console.error('[firestore] courts/main write FAILED:', err && (err.code || err.message), err);
+        /* Allow retry next time. */
+        _lastCourtsWrittenJson = '';
       });
-    } catch(_){}
+  }
+
+  /* ============================================================
+     ATTENDANCE FIRESTORE WRITE — count-gated.
+     Only writes when attendance Set actually grew.
+  ============================================================ */
+  let _lastAttendanceCount = -1;
+  function saveAttendanceToFirestoreIfChanged(){
+    if (typeof db === 'undefined' || !db || !db.collection) return;
+    const cur = attendanceRecords.size;
+    if (cur === _lastAttendanceCount) return;
+    _lastAttendanceCount = cur;
+    console.info('[firestore] write attendance/snapshot · count=' + cur);
+    db.collection('attendance').doc('snapshot').set({
+      data: [...attendanceRecords],
+      bookers: attendanceBookers
+    })
+      .then(() => { console.info('[firestore] attendance/snapshot write OK'); })
+      .catch(err => {
+        console.error('[firestore] attendance/snapshot write FAILED:', err && (err.code || err.message), err);
+        _lastAttendanceCount = -1;
+      });
   }
 
   /* ============================================================
@@ -2434,7 +2492,17 @@
     processEndedSlots();
 
     saveScheduleDate(today);
-    persist();
+    /* IMPORTANT: do NOT call persist() here. persist() writes to Firestore,
+       and at this point the courts listener hasn't fired yet, so writing
+       would blast our stale localStorage cache over the cloud — that's the
+       exact race that caused multi-device sync to fail (Device A's old
+       localStorage overwriting Device B's recent bookings). The cloud
+       Firestore courts listener will hydrate in-memory courts within ~200ms
+       of boot; until then localStorage cache is just for fast UI feedback,
+       NOT a source we ever push back to cloud. */
+    saveUsers();
+    saveCourts();
+    saveAttendance();
   }
 
   /* ============================================================
@@ -2515,14 +2583,24 @@
     try {
       _courtsSnapshotUnsubscribe = db.collection('courts').doc('main').onSnapshot(
         snap => {
+          /* Hydration flag — mark cloud state as KNOWN even if doc is empty
+             or missing. This is the gate that unblocks saveCourtsToFirestoreIfChanged. */
+          _courtsListenerFired = true;
           const data = snap && snap.data && snap.data();
-          if (!data || !data.data || typeof data.data !== 'object') return;
+          if (!data || !data.data || typeof data.data !== 'object'){
+            console.info('[firestore] courts/main empty or missing; cloud state will be created on first write');
+            /* Establish "remote is empty" baseline so a first local mutation
+               counts as different and triggers a write. */
+            _lastCourtsRemoteJson = JSON.stringify({});
+            return;
+          }
           const remote = data.data;
           /* Diff: if local already matches remote, do nothing (avoids loops
              from our own writes). */
           const remoteJson = JSON.stringify(remote);
           if (remoteJson === _lastCourtsRemoteJson) return;
           _lastCourtsRemoteJson = remoteJson;
+          console.info('[firestore] courts/main remote update received · ' + remoteJson.length + ' chars');
           /* Reconcile each known court. Backfill missing time slots so the
              grid never has holes. */
           ['A','B'].forEach(c => {
@@ -2532,12 +2610,19 @@
               if (!courts[c][t]) courts[c][t] = { top:{k:'open',p:[]}, bottom:{k:'open',p:[]} };
             });
           });
+          /* Update our local cache + last-written so a follow-up local
+             mutation doesn't think we still need to write this remote state. */
           try { saveCourts(); } catch(_){}
+          _lastCourtsWrittenJson = JSON.stringify(courts);
           if (screens.app && screens.app.classList.contains('active')){
             try { renderApp(); } catch(_){}
           }
         },
-        err => { console.warn('courts onSnapshot error:', err && err.message); }
+        err => {
+          console.error('[firestore] courts onSnapshot error:', err && (err.code || err.message), err);
+          /* Don't mark hydrated — writes stay blocked so we don't blast
+             stale state when reads are failing. */
+        }
       );
     } catch(e){
       console.warn('startCourtsListener failed:', e && e.message);
