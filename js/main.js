@@ -139,12 +139,17 @@
     /* Already wrote this exact state → no-op (e.g. rapid re-renders). */
     if (currentJson === _lastCourtsWrittenJson) return;
     _lastCourtsWrittenJson = currentJson;
-    console.info('[firestore] write courts/main · ' + currentJson.length + ' chars');
-    db.collection('courts').doc('main').set({ data: courts })
-      .then(() => { console.info('[firestore] courts/main write OK'); })
+    if (!_currentPlayDate){
+      console.warn('[firestore] no _currentPlayDate set, skipping write');
+      _lastCourtsWrittenJson = '';
+      return;
+    }
+    const docPath = 'courts/' + _currentPlayDate;
+    console.info('[firestore] write ' + docPath + ' · ' + currentJson.length + ' chars');
+    db.collection('courts').doc(_currentPlayDate).set({ data: courts, playDate: _currentPlayDate })
+      .then(() => { console.info('[firestore] ' + docPath + ' write OK'); })
       .catch(err => {
-        console.error('[firestore] courts/main write FAILED:', err && (err.code || err.message), err);
-        /* Allow retry next time. */
+        console.error('[firestore] ' + docPath + ' write FAILED:', err && (err.code || err.message), err);
         _lastCourtsWrittenJson = '';
       });
   }
@@ -241,20 +246,72 @@
 
   /* ============================================================
      DATE HELPERS
+
+     todayISO()        — Asia/Taipei calendar date (used by attendance keys)
+     systemDateISO()   — "play date" = today, but if Asia/Taipei wall clock
+                          is past 19:00 we advance to tomorrow. This is what
+                          Firestore courts/{playDate} subscribes/writes to.
+     playDateLabel()   — "YYYY/MM/DD 週X" for the current play date (title).
+
+     _currentPlayDate  — the play date this device is currently mounted on.
+                          Set by startCourtsListener(). Used by all reads/writes
+                          + the day-flip detector in the 60s ticker.
   ============================================================ */
+  let _currentPlayDate = '';
+
+  function _taipeiYMD(){
+    /* Return Asia/Taipei calendar date as {y,m,d} numbers. */
+    try {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Taipei',
+        year: 'numeric', month: '2-digit', day: '2-digit'
+      }).formatToParts(new Date());
+      return {
+        y: Number(parts.find(p => p.type === 'year').value),
+        m: Number(parts.find(p => p.type === 'month').value),
+        d: Number(parts.find(p => p.type === 'day').value)
+      };
+    } catch(_){
+      const n = new Date();
+      const tw = new Date(n.getTime() + (n.getTimezoneOffset() + 8*60) * 60000);
+      return {
+        y: tw.getUTCFullYear(),
+        m: tw.getUTCMonth() + 1,
+        d: tw.getUTCDate()
+      };
+    }
+  }
+
   function todayISO(){
-    const d = new Date();
-    return d.getFullYear() + '-' +
-      String(d.getMonth()+1).padStart(2,'0') + '-' +
-      String(d.getDate()).padStart(2,'0');
+    const t = _taipeiYMD();
+    return t.y + '-' + String(t.m).padStart(2,'0') + '-' + String(t.d).padStart(2,'0');
   }
   function todayLabel(){
-    const d = new Date();
-    const y  = d.getFullYear();
-    const m  = String(d.getMonth()+1).padStart(2,'0');
-    const dd = String(d.getDate()).padStart(2,'0');
-    const wk = ['日','一','二','三','四','五','六'][d.getDay()];
-    return y + '/' + m + '/' + dd + ' 週' + wk;
+    const t = _taipeiYMD();
+    const date = new Date(Date.UTC(t.y, t.m - 1, t.d));
+    const wk = ['日','一','二','三','四','五','六'][date.getUTCDay()];
+    return t.y + '/' + String(t.m).padStart(2,'0') + '/' + String(t.d).padStart(2,'0') + ' 週' + wk;
+  }
+
+  function systemDateISO(){
+    /* Play date = today if before 19:00 Taipei; otherwise tomorrow.
+       This is the cutoff that flips the courts board to the next day. */
+    const t = _taipeiYMD();
+    let date = new Date(Date.UTC(t.y, t.m - 1, t.d));
+    if (nowTimeMinutesTW() >= 19 * 60){
+      date.setUTCDate(date.getUTCDate() + 1);
+    }
+    return date.getUTCFullYear() + '-' +
+      String(date.getUTCMonth() + 1).padStart(2,'0') + '-' +
+      String(date.getUTCDate()).padStart(2,'0');
+  }
+
+  function playDateLabel(){
+    const iso = _currentPlayDate || systemDateISO();
+    const [y, m, d] = iso.split('-').map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d));
+    const wk = ['日','一','二','三','四','五','六'][date.getUTCDay()];
+    return y + '/' + String(m).padStart(2,'0') + '/' + String(d).padStart(2,'0') + ' 週' + wk;
   }
 
   const STATUS = {
@@ -545,7 +602,11 @@
       else break;
     }
     if (endedUntil === 0) return false;
-    const changed = recordFromCourts(courts, todayISO(), endedUntil);
+    /* Attendance records use the PLAY date (not calendar date), so a slot
+       booked under "today's play date" still counts under that key even if
+       the clock has rolled past midnight before the slot ended. */
+    const dateKey = _currentPlayDate || systemDateISO();
+    const changed = recordFromCourts(courts, dateKey, endedUntil);
     if (changed) persist();
     return changed;
   }
@@ -599,8 +660,11 @@
     const dirBtn = document.getElementById('directory-open');
     if (dirBtn) dirBtn.style.display = canBook() ? 'inline-flex' : 'none';
 
+    /* Title reflects the play date (which auto-advances at 19:00),
+       not the calendar today. Otherwise users at 19:01 would see
+       "tomorrow's board" but the title would still say today. */
     const dateEl = document.getElementById('cb-date');
-    if (dateEl) dateEl.textContent = todayLabel();
+    if (dateEl) dateEl.textContent = playDateLabel();
 
     ['A','B'].forEach(c => {
       const slot = courts[c][TIMES[activeIdx]];
@@ -2459,7 +2523,10 @@
        — date is part of the key, so old days don't clash with today. */
     loadAttendance();
 
-    const today = todayISO();
+    /* Use the play-date (19:00 flip) for courts boundary, NOT the calendar
+       date. After 19:00, today's courts are no longer relevant — the system
+       has moved on to tomorrow's slot board. */
+    const today = systemDateISO();
     const savedDate = safeGet(STORAGE_KEYS.SCHEDULE);
     const rawC = safeGet(STORAGE_KEYS.COURTS);
     if (savedDate === today && rawC){
@@ -2475,7 +2542,7 @@
         }
       } catch(_){}
     } else if (savedDate && savedDate !== today && rawC){
-      /* Stale courts from a previous day — record everything as ended
+      /* Stale courts from a previous play day — record everything as ended
          under that date BEFORE wiping, so attendance isn't lost. */
       try {
         const saved = JSON.parse(rawC);
@@ -2571,38 +2638,52 @@
   }
 
   /* ============================================================
-     COURTS LIVE SYNC — every member sees the same board in real time.
-     Reads from db.collection('courts').doc('main') — same path persist()
-     already writes. Re-renders on any remote change.
+     COURTS LIVE SYNC — per-play-day documents
+     Reads from db.collection('courts').doc(_currentPlayDate). Each play
+     day has its own doc, so:
+       - History is preserved naturally (yesterday's doc stays in Firestore)
+       - 19:00 flip just switches subscription to tomorrow's doc
+       - Legacy courts/main is left untouched (never read/written)
   ============================================================ */
   let _courtsSnapshotUnsubscribe = null;
   let _lastCourtsRemoteJson = '';
   function startCourtsListener(){
     if (typeof db === 'undefined' || !db || !db.collection) return;
-    if (_courtsSnapshotUnsubscribe) return;
+    const targetDate = systemDateISO();
+    /* Already subscribed to today's doc — no-op. */
+    if (_courtsSnapshotUnsubscribe && _currentPlayDate === targetDate) return;
+    /* Unsubscribe from any previous day's doc. */
+    if (_courtsSnapshotUnsubscribe){
+      try { _courtsSnapshotUnsubscribe(); } catch(_){}
+      _courtsSnapshotUnsubscribe = null;
+    }
+    /* Reset every state that's tied to a specific doc. */
+    _currentPlayDate = targetDate;
+    _courtsListenerFired = false;
+    _lastCourtsRemoteJson = '';
+    _lastCourtsWrittenJson = '';
+    /* Wipe local in-memory courts — previous play day's data must not
+       leak into today's view while we wait for onSnapshot. */
+    emptyCourtsForToday();
+    try { saveCourts(); } catch(_){}
+
+    const docPath = 'courts/' + _currentPlayDate;
+    console.info('[firestore] subscribing to ' + docPath);
     try {
-      _courtsSnapshotUnsubscribe = db.collection('courts').doc('main').onSnapshot(
+      _courtsSnapshotUnsubscribe = db.collection('courts').doc(_currentPlayDate).onSnapshot(
         snap => {
-          /* Hydration flag — mark cloud state as KNOWN even if doc is empty
-             or missing. This is the gate that unblocks saveCourtsToFirestoreIfChanged. */
           _courtsListenerFired = true;
           const data = snap && snap.data && snap.data();
           if (!data || !data.data || typeof data.data !== 'object'){
-            console.info('[firestore] courts/main empty or missing; cloud state will be created on first write');
-            /* Establish "remote is empty" baseline so a first local mutation
-               counts as different and triggers a write. */
+            console.info('[firestore] ' + docPath + ' empty or missing; will create on first write');
             _lastCourtsRemoteJson = JSON.stringify({});
             return;
           }
           const remote = data.data;
-          /* Diff: if local already matches remote, do nothing (avoids loops
-             from our own writes). */
           const remoteJson = JSON.stringify(remote);
           if (remoteJson === _lastCourtsRemoteJson) return;
           _lastCourtsRemoteJson = remoteJson;
-          console.info('[firestore] courts/main remote update received · ' + remoteJson.length + ' chars');
-          /* Reconcile each known court. Backfill missing time slots so the
-             grid never has holes. */
+          console.info('[firestore] ' + docPath + ' remote update · ' + remoteJson.length + ' chars');
           ['A','B'].forEach(c => {
             if (remote[c]) courts[c] = remote[c];
             if (!courts[c]) courts[c] = {};
@@ -2610,8 +2691,6 @@
               if (!courts[c][t]) courts[c][t] = { top:{k:'open',p:[]}, bottom:{k:'open',p:[]} };
             });
           });
-          /* Update our local cache + last-written so a follow-up local
-             mutation doesn't think we still need to write this remote state. */
           try { saveCourts(); } catch(_){}
           _lastCourtsWrittenJson = JSON.stringify(courts);
           if (screens.app && screens.app.classList.contains('active')){
@@ -2619,13 +2698,31 @@
           }
         },
         err => {
-          console.error('[firestore] courts onSnapshot error:', err && (err.code || err.message), err);
-          /* Don't mark hydrated — writes stay blocked so we don't blast
-             stale state when reads are failing. */
+          console.error('[firestore] ' + docPath + ' onSnapshot error:', err && (err.code || err.message), err);
         }
       );
     } catch(e){
       console.warn('startCourtsListener failed:', e && e.message);
+    }
+  }
+
+  /* Day-flip detector — call periodically (60s ticker). If the play date
+     advanced past 19:00 boundary, flush attendance for the OUTGOING day,
+     then resubscribe to the new day's doc. */
+  function checkPlayDateFlip(){
+    const newDate = systemDateISO();
+    if (_currentPlayDate && _currentPlayDate !== newDate){
+      console.info('[playDate] flip', _currentPlayDate, '→', newDate);
+      /* Flush any still-pending attendance under the OUTGOING play date
+         before we drop the in-memory courts. */
+      try { recordFromCourts(courts, _currentPlayDate, TIMES.length); } catch(_){}
+      try { saveAttendance(); } catch(_){}
+      saveAttendanceToFirestoreIfChanged();
+      /* Resubscribe to the new day's doc; resets all _courts* flags. */
+      startCourtsListener();
+      if (screens.app && screens.app.classList.contains('active')){
+        try { renderApp(); } catch(_){}
+      }
     }
   }
 
@@ -2640,9 +2737,10 @@
     startUsersListener();
     /* Subscribe to remote COURTS so every member sees the same board. */
     startCourtsListener();
-    /* Real-time tick: every 60 s re-render the slots/marker and check for
-       newly-ended slots so attendance stays current without a page refresh. */
+    /* Real-time tick: every 60 s re-render the slots/marker, check for
+       newly-ended slots, AND check for 19:00 play-date flip. */
     setInterval(() => {
+      checkPlayDateFlip();
       if (screens.app.classList.contains('active')){
         processEndedSlots();
         renderApp();
